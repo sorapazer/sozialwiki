@@ -1,0 +1,822 @@
+<title>SozialWiki – Fachlexikon der Sozialen Arbeit</title>
+<style>
+  :root {
+    --paper:#ECE8DF; --surface:#F5F2EB; --surface-2:#E4DFD3; --ink:#1A2420;
+    --ink-soft:#47514B; --ink-faint:#6C756E; --line:#D3CCBD; --teal:#14635C;
+    --teal-deep:#0E4B45; --teal-tint:#DCE7E2; --clay:#B25C29; --clay-tint:#F0DFD0;
+    --focus:#14635C; --shadow:18px 18px 48px rgba(26,36,32,.10);
+    --f-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --f-body:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --wrap:1120px; --r:4px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#121614; --surface:#191F1C; --surface-2:#212925; --ink:#E9E7DE;
+      --ink-soft:#B0B6AF; --ink-faint:#838C85; --line:#2C3531; --teal:#52B3A8;
+      --teal-deep:#6AC6BB; --teal-tint:#16302C; --clay:#DE9058; --clay-tint:#33241A;
+      --focus:#52B3A8; --shadow:18px 18px 48px rgba(0,0,0,.34); }
+  }
+  :root[data-theme="light"]{ --paper:#ECE8DF; --surface:#F5F2EB; --surface-2:#E4DFD3; --ink:#1A2420;
+    --ink-soft:#47514B; --ink-faint:#6C756E; --line:#D3CCBD; --teal:#14635C; --teal-deep:#0E4B45;
+    --teal-tint:#DCE7E2; --clay:#B25C29; --clay-tint:#F0DFD0; --focus:#14635C; --shadow:18px 18px 48px rgba(26,36,32,.10); }
+  :root[data-theme="dark"]{ --paper:#121614; --surface:#191F1C; --surface-2:#212925; --ink:#E9E7DE;
+    --ink-soft:#B0B6AF; --ink-faint:#838C85; --line:#2C3531; --teal:#52B3A8; --teal-deep:#6AC6BB;
+    --teal-tint:#16302C; --clay:#DE9058; --clay-tint:#33241A; --focus:#52B3A8; --shadow:18px 18px 48px rgba(0,0,0,.34); }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none!important;animation:none!important;} }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--f-body); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap{ width:100%; max-width:var(--wrap); margin:0 auto; padding:0 24px; }
+  a{ color:inherit; }
+  ::selection{ background:var(--teal); color:var(--surface); }
+  .eyebrow{ font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; font-weight:700; color:var(--teal); }
+  h2.sec{ font-family:var(--f-display); font-size:clamp(1.7rem,3.6vw,2.5rem); margin:12px 0 0; letter-spacing:-.02em; text-wrap:balance; }
+
+  /* header */
+  header.top{ position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--paper) 88%,transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .top-inner{ display:flex; align-items:center; gap:18px; height:66px; }
+  .brand{ display:flex; align-items:center; gap:11px; text-decoration:none; margin-right:auto; }
+  .brand .mark{ width:34px; height:34px; flex:none; }
+  .brand b{ font-family:var(--f-display); font-size:1.28rem; font-weight:700; letter-spacing:-.01em; }
+  .brand b span{ color:var(--teal); }
+  .brand small{ display:block; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); font-weight:600; margin-top:-2px; }
+  .navlinks{ display:flex; gap:6px; }
+  .navlinks a{ text-decoration:none; font-size:.92rem; color:var(--ink-soft); font-weight:500; padding:7px 12px; border-radius:var(--r); }
+  .navlinks a:hover{ color:var(--teal); background:var(--teal-tint); }
+  .navlinks a.active{ color:var(--teal); font-weight:600; }
+  .theme-btn{ border:1px solid var(--line); background:var(--surface); color:var(--ink); width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:1rem; display:grid; place-items:center; flex:none; }
+  .theme-btn:hover{ border-color:var(--teal); }
+  @media (max-width:820px){ .navlinks a{ padding:6px 9px; font-size:.85rem; } .brand small{display:none;} }
+  @media (max-width:560px){ .navlinks{ display:none; } }
+
+  /* route panels */
+  .route{ display:none; }
+  .route.active{ display:block; animation:fade .3s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1;transform:none;} }
+  @media (prefers-reduced-motion: reduce){ .route.active{animation:none;} }
+  .pagehead{ padding:52px 0 8px; }
+  .pagehead p.intro{ color:var(--ink-soft); font-size:1.05rem; max-width:58ch; margin-top:14px; }
+
+  /* hero */
+  .hero{ padding:60px 0 40px; }
+  .hero h1{ font-family:var(--f-display); font-weight:700; font-size:clamp(2.3rem,5.6vw,4rem); line-height:1.04; letter-spacing:-.02em; margin:14px 0 0; text-wrap:balance; max-width:15ch; }
+  .hero h1 em{ font-style:normal; color:var(--teal); }
+  .hero p.lead{ font-size:clamp(1.05rem,2.2vw,1.28rem); color:var(--ink-soft); margin:20px 0 0; max-width:54ch; }
+  .search-wrap{ margin-top:34px; max-width:640px; }
+  .search{ display:flex; align-items:center; gap:12px; background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:6px 8px 6px 20px; transition:border-color .18s, box-shadow .18s; }
+  .search:focus-within{ border-color:var(--teal); box-shadow:0 0 0 4px var(--teal-tint); }
+  .search svg{ flex:none; color:var(--ink-faint); }
+  .search input{ flex:1; border:0; background:none; outline:none; font-family:var(--f-body); font-size:1.05rem; color:var(--ink); padding:8px 0; }
+  .search input::placeholder{ color:var(--ink-faint); }
+  .search .go{ border:0; background:var(--teal); color:var(--surface); font-weight:600; font-size:.9rem; padding:11px 20px; border-radius:999px; cursor:pointer; font-family:var(--f-body); }
+  .search .go:hover{ background:var(--teal-deep); }
+  .search-hint{ margin-top:12px; font-size:.85rem; color:var(--ink-faint); }
+  .search-hint b{ color:var(--ink-soft); font-weight:600; cursor:pointer; }
+  .search-hint b:hover{ color:var(--teal); }
+  .stats{ display:flex; gap:30px; margin-top:40px; flex-wrap:wrap; }
+  .stat b{ font-family:var(--f-display); font-size:1.75rem; display:block; line-height:1; }
+  .stat span{ font-size:.78rem; color:var(--ink-faint); letter-spacing:.04em; text-transform:uppercase; font-weight:600; }
+
+  /* Begriff des Tages */
+  .botd{ margin-top:46px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:26px 28px; display:grid; grid-template-columns:1fr auto; gap:18px 28px; align-items:center; box-shadow:var(--shadow); }
+  @media (max-width:640px){ .botd{ grid-template-columns:1fr; } }
+  .botd .k{ font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--clay); font-weight:700; }
+  .botd h3{ font-family:var(--f-display); font-size:1.9rem; margin:6px 0 6px; letter-spacing:-.01em; }
+  .botd p{ margin:0; color:var(--ink-soft); max-width:60ch; }
+  .btn{ border:0; background:var(--teal); color:var(--surface); font-family:var(--f-body); font-weight:600; font-size:.92rem; padding:12px 22px; border-radius:999px; cursor:pointer; white-space:nowrap; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .btn:hover{ background:var(--teal-deep); }
+  .btn.ghost{ background:transparent; color:var(--teal); border:1px solid var(--line); }
+  .btn.ghost:hover{ border-color:var(--teal); background:var(--teal-tint); }
+
+  /* browse */
+  .browse{ padding:30px 0 20px; border-top:1px solid var(--line); margin-top:52px; }
+  .az{ display:flex; flex-wrap:wrap; gap:4px; margin-bottom:20px; }
+  .az button{ min-width:32px; height:32px; padding:0 6px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:var(--r); font-size:.84rem; font-weight:600; cursor:pointer; font-family:var(--f-body); }
+  .az button:hover:not(:disabled){ border-color:var(--teal); color:var(--teal); }
+  .az button.active{ background:var(--teal); border-color:var(--teal); color:var(--surface); }
+  .az button:disabled{ opacity:.3; cursor:default; }
+  .cats{ display:flex; flex-wrap:wrap; gap:8px; }
+  .cats button{ border:1px solid var(--line); background:transparent; color:var(--ink-soft); padding:7px 15px; border-radius:999px; font-size:.85rem; font-weight:500; cursor:pointer; font-family:var(--f-body); }
+  .cats button:hover{ border-color:var(--teal); color:var(--teal); }
+  .cats button.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .results-meta{ margin:26px 0 16px; font-size:.88rem; color:var(--ink-faint); }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+  .card{ text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:22px; cursor:pointer; font-family:var(--f-body); display:flex; flex-direction:column; gap:9px; color:inherit; transition:transform .16s, border-color .16s, box-shadow .16s; position:relative; }
+  .card:hover{ transform:translateY(-3px); border-color:var(--teal); box-shadow:var(--shadow); }
+  .card:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .card .k{ font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--clay); font-weight:700; }
+  .card h3{ font-family:var(--f-display); font-size:1.4rem; margin:0; letter-spacing:-.01em; }
+  .card p{ margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.5; }
+  .card .levels{ display:flex; gap:5px; margin-top:4px; flex-wrap:wrap; }
+  .card .levels i{ font-style:normal; font-size:.66rem; font-weight:600; padding:3px 8px; border-radius:999px; background:var(--teal-tint); color:var(--teal-deep); letter-spacing:.02em; }
+  .card .arrow{ position:absolute; top:20px; right:20px; color:var(--ink-faint); opacity:0; transition:opacity .16s, transform .16s; }
+  .card:hover .arrow{ opacity:1; transform:translateX(2px); }
+  .empty{ padding:50px 20px; text-align:center; color:var(--ink-faint); grid-column:1/-1; }
+
+  /* register */
+  .reg-tools{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:28px 0 10px; }
+  .reg-search{ flex:1; min-width:220px; display:flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:5px 8px 5px 16px; }
+  .reg-search:focus-within{ border-color:var(--teal); }
+  .reg-search input{ flex:1; border:0; background:none; outline:none; font-family:var(--f-body); font-size:.98rem; color:var(--ink); padding:7px 0; }
+  .reg-count{ font-size:.85rem; color:var(--ink-faint); }
+  .reg-group{ margin-top:26px; }
+  .reg-letter{ font-family:var(--f-display); font-size:1.6rem; color:var(--teal); border-bottom:2px solid var(--line); padding-bottom:6px; margin:0 0 6px; }
+  .reg-row{ display:flex; align-items:center; gap:14px; padding:13px 4px; border-bottom:1px solid var(--line); cursor:pointer; }
+  .reg-row:hover{ background:var(--surface); }
+  .reg-row .rt{ font-family:var(--f-display); font-size:1.12rem; font-weight:600; min-width:210px; }
+  .reg-row .rc{ font-size:.8rem; color:var(--clay); font-weight:600; text-transform:uppercase; letter-spacing:.04em; flex:1; }
+  .reg-row .rl{ display:flex; gap:4px; }
+  .reg-row .rl i{ font-style:normal; font-size:.6rem; font-weight:700; width:22px; text-align:center; padding:3px 0; border-radius:3px; background:var(--teal-tint); color:var(--teal-deep); }
+  .reg-row .rl i.off{ background:transparent; color:var(--ink-faint); border:1px dashed var(--line); }
+  @media (max-width:640px){ .reg-row{ flex-wrap:wrap; gap:6px; } .reg-row .rt{ min-width:100%; } }
+
+  /* systematik cards */
+  .syst{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:26px; }
+  .syst button{ text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:18px 20px; cursor:pointer; font-family:var(--f-body); color:inherit; }
+  .syst button:hover{ border-color:var(--teal); }
+  .syst b{ font-family:var(--f-display); font-size:1.1rem; display:block; }
+  .syst span{ font-size:.82rem; color:var(--ink-faint); }
+
+  /* journal */
+  .journal{ margin:70px 0 0; padding:56px 0; background:var(--surface-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .journal .split{ display:grid; grid-template-columns:1.1fr 1fr; gap:48px; align-items:center; }
+  @media (max-width:820px){ .journal .split{ grid-template-columns:1fr; gap:32px; } }
+  .journal p{ color:var(--ink-soft); font-size:1.02rem; margin:16px 0 0; max-width:46ch; }
+  .journal ul{ list-style:none; padding:0; margin:24px 0 0; display:grid; gap:12px; }
+  .journal li{ display:flex; gap:12px; align-items:flex-start; font-size:.96rem; }
+  .journal li svg{ flex:none; margin-top:3px; color:var(--teal); }
+  .roadmap{ display:grid; }
+  .step{ display:grid; grid-template-columns:auto 1fr; gap:18px; padding:18px 0; border-bottom:1px dashed var(--line); }
+  .step:last-child{ border-bottom:0; }
+  .step .n{ font-family:var(--f-display); font-size:1.1rem; font-weight:700; color:var(--surface); background:var(--teal); width:34px; height:34px; border-radius:50%; display:grid; place-items:center; }
+  .step:nth-child(3) .n{ background:var(--clay); }
+  .step:last-child .n{ background:var(--ink); color:var(--paper); }
+  .step h4{ margin:4px 0 4px; font-size:1.05rem; }
+  .step p{ margin:0; font-size:.9rem; color:var(--ink-soft); }
+  .step .tag{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; font-weight:700; color:var(--ink-faint); }
+
+  /* news */
+  .demo-banner{ display:flex; gap:12px; align-items:flex-start; background:var(--clay-tint); border:1px solid color-mix(in srgb,var(--clay) 30%,transparent); border-radius:8px; padding:14px 18px; margin:24px 0 6px; font-size:.9rem; color:var(--ink-soft); }
+  .demo-banner svg{ flex:none; color:var(--clay); margin-top:2px; }
+  .news-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; margin-top:26px; }
+  .news{ background:var(--surface); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+  .news .band{ height:6px; background:var(--teal); }
+  .news:nth-child(2) .band{ background:var(--clay); }
+  .news:nth-child(3) .band{ background:var(--ink); }
+  .news:nth-child(4) .band{ background:var(--teal-deep); }
+  .news .body{ padding:20px 22px 22px; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .news .meta{ display:flex; justify-content:space-between; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:700; color:var(--ink-faint); }
+  .news .meta .rub{ color:var(--teal); }
+  .news h3{ font-family:var(--f-display); font-size:1.25rem; margin:0; letter-spacing:-.01em; }
+  .news p{ margin:0; font-size:.92rem; color:var(--ink-soft); line-height:1.55; }
+  .news .more{ margin-top:auto; font-size:.85rem; font-weight:600; color:var(--teal); }
+
+  /* über / mitmachen */
+  .feat{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:30px; }
+  .feat .c{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:24px; }
+  .feat .c .ic{ width:42px; height:42px; border-radius:10px; background:var(--teal-tint); color:var(--teal-deep); display:grid; place-items:center; margin-bottom:14px; }
+  .feat .c h4{ font-family:var(--f-display); font-size:1.2rem; margin:0 0 8px; }
+  .feat .c p{ margin:0; font-size:.92rem; color:var(--ink-soft); }
+  .cta-band{ margin-top:44px; background:var(--ink); color:var(--paper); border-radius:14px; padding:40px 36px; display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; }
+  .cta-band h3{ font-family:var(--f-display); font-size:1.6rem; margin:0; }
+  .cta-band p{ margin:8px 0 0; opacity:.8; font-size:.95rem; max-width:44ch; }
+
+  /* footer */
+  footer{ padding:44px 0 60px; border-top:1px solid var(--line); margin-top:70px; }
+  .foot-inner{ display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:center; }
+  footer small{ color:var(--ink-faint); font-size:.85rem; }
+  .disc{ margin-top:20px; font-size:.78rem; color:var(--ink-faint); max-width:64ch; line-height:1.5; }
+  .foot-nav{ display:flex; gap:18px; flex-wrap:wrap; }
+  .foot-nav a{ font-size:.85rem; color:var(--ink-soft); text-decoration:none; }
+  .foot-nav a:hover{ color:var(--teal); }
+
+  /* modal */
+  .overlay{ position:fixed; inset:0; z-index:100; display:none; background:color-mix(in srgb,var(--ink) 52%,transparent); backdrop-filter:blur(3px); padding:40px 20px; overflow-y:auto; }
+  .overlay.open{ display:block; }
+  .modal{ background:var(--surface); max-width:760px; margin:0 auto; border-radius:14px; border:1px solid var(--line); box-shadow:var(--shadow); overflow:hidden; animation:rise .24s ease; }
+  @keyframes rise{ from{transform:translateY(16px);opacity:0;} to{transform:none;opacity:1;} }
+  @media (prefers-reduced-motion: reduce){ .modal{animation:none;} }
+  .m-head{ padding:30px 34px 22px; border-bottom:1px solid var(--line); position:relative; }
+  .m-head .k{ font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--clay); font-weight:700; }
+  .m-head h2{ font-family:var(--f-display); font-size:clamp(1.8rem,4vw,2.4rem); margin:8px 0 6px; letter-spacing:-.015em; }
+  .m-head .short{ color:var(--ink-soft); margin:0; font-size:1.02rem; }
+  .m-actions{ position:absolute; top:22px; right:24px; display:flex; gap:8px; }
+  .m-actions button{ width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; font-size:1rem; display:grid; place-items:center; }
+  .m-actions button:hover{ border-color:var(--clay); color:var(--clay); }
+  .levelbar{ display:flex; gap:4px; padding:16px 34px 0; flex-wrap:wrap; }
+  .levelbar button{ border:0; background:none; font-family:var(--f-body); cursor:pointer; padding:9px 15px; font-size:.88rem; font-weight:600; color:var(--ink-faint); border-radius:999px; display:flex; align-items:center; gap:7px; }
+  .levelbar button:hover{ color:var(--ink); }
+  .levelbar button.active{ background:var(--teal); color:var(--surface); }
+  .levelbar button .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; opacity:.7; }
+  .m-body{ padding:22px 34px 8px; }
+  .leveltext{ font-size:1.06rem; line-height:1.72; color:var(--ink); }
+  .leveltext.simple{ font-size:1.14rem; line-height:1.9; }
+  .praxis-box{ background:var(--clay-tint); border-left:3px solid var(--clay); border-radius:0 8px 8px 0; padding:16px 20px; }
+  .praxis-box .plabel{ font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--clay); margin-bottom:6px; }
+  .praxis-box p{ margin:0; font-size:1rem; line-height:1.65; }
+  .m-meta{ padding:8px 34px 30px; display:grid; gap:22px; }
+  .m-block h5{ margin:0 0 10px; font-size:.74rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chips button{ border:1px solid var(--line); background:var(--paper); color:var(--teal); font-family:var(--f-body); font-size:.85rem; padding:6px 13px; border-radius:999px; cursor:pointer; font-weight:500; }
+  .chips button:hover{ border-color:var(--teal); background:var(--teal-tint); }
+  .m-block ul.src{ margin:0; padding-left:18px; display:grid; gap:7px; }
+  .m-block ul.src li{ font-size:.9rem; color:var(--ink-soft); line-height:1.5; }
+  .cite{ background:var(--paper); border:1px dashed var(--line); border-radius:8px; padding:16px 18px; display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; }
+  .cite p{ margin:0; font-size:.86rem; color:var(--ink-soft); line-height:1.55; font-style:italic; flex:1; min-width:220px; }
+  .cite button{ flex:none; border:1px solid var(--teal); background:var(--teal); color:var(--surface); font-family:var(--f-body); font-size:.82rem; font-weight:600; padding:9px 15px; border-radius:var(--r); cursor:pointer; }
+  .cite button:hover{ background:var(--teal-deep); }
+  .cite button.copied{ background:var(--clay); border-color:var(--clay); }
+  .m-author{ padding:18px 34px 30px; font-size:.82rem; color:var(--ink-faint); border-top:1px solid var(--line); }
+  .m-author b{ color:var(--ink-soft); }
+
+  /* print: only the open entry */
+  @media print{
+    header.top, footer, .overlay .m-actions, .levelbar, .search, .theme-btn{ display:none !important; }
+    body{ background:#fff; color:#000; }
+    .overlay{ position:static; display:block !important; background:none; padding:0; }
+    .modal{ box-shadow:none; border:none; max-width:100%; }
+    .route{ display:none !important; }
+    .praxis-box{ border-left:3px solid #999; }
+  }
+</style>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="#/" data-nav aria-label="SozialWiki Startseite">
+      <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="14" cy="14" r="7" stroke="var(--teal)" stroke-width="2.4"/>
+        <circle cx="26" cy="26" r="7" stroke="var(--clay)" stroke-width="2.4"/>
+        <path d="M18.5 18.5 L21.5 21.5" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span><b>Sozial<span>Wiki</span></b><small>Fachlexikon</small></span>
+    </a>
+    <nav class="navlinks" id="nav">
+      <a href="#/" data-route="/">Lexikon</a>
+      <a href="#/register" data-route="/register">Register</a>
+      <a href="#/journal" data-route="/journal">Journal</a>
+      <a href="#/news" data-route="/news">News</a>
+      <a href="#/ueber" data-route="/ueber">Über</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" aria-label="Hell/Dunkel umschalten" title="Hell/Dunkel">◐</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ HOME / LEXIKON ============ -->
+  <section class="route" id="route-home">
+    <div class="hero">
+      <div class="wrap">
+        <span class="eyebrow">Das offene Fachlexikon der Sozialen Arbeit</span>
+        <h1>Begriffe der Sozialen Arbeit — <em>fundiert erklärt,</em> für alle verständlich.</h1>
+        <p class="lead">Von <em>Empowerment</em> bis <em>Doppeltes Mandat</em>: Jeder Eintrag auf mehreren Lese-Ebenen — wissenschaftlich, verständlich und in Einfacher Sprache — mit Praxisbeispiel, Quellen und zitierfähigem Beleg.</p>
+        <div class="search-wrap">
+          <form class="search" id="searchForm" role="search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input id="q" type="search" placeholder="Begriff suchen … z. B. Resilienz, Case Management" autocomplete="off" aria-label="Begriff suchen">
+            <button class="go" type="submit">Suchen</button>
+          </form>
+          <p class="search-hint">Beliebt: <b>Empowerment</b> · <b>Lebensweltorientierung</b> · <b>Adultismus</b> · <b>Salutogenese</b></p>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="statTerms">26</b><span>Fachbegriffe</span></div>
+          <div class="stat"><b id="statCats">6</b><span>Kategorien</span></div>
+          <div class="stat"><b>3</b><span>Lese-Ebenen</span></div>
+          <div class="stat"><b>Open</b><span>Access &amp; zitierfähig</span></div>
+        </div>
+        <!-- Begriff des Tages -->
+        <div class="botd" id="botd"></div>
+      </div>
+    </div>
+    <div id="lexikon">
+      <div class="wrap browse">
+        <span class="eyebrow">Durchstöbern</span>
+        <div class="az" id="az" role="group" aria-label="Nach Anfangsbuchstabe filtern"></div>
+        <div class="cats" id="cats" role="group" aria-label="Nach Kategorie filtern"></div>
+      </div>
+      <div class="wrap">
+        <p class="results-meta" id="resultsMeta"></p>
+        <div class="grid" id="grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REGISTER ============ -->
+  <section class="route" id="route-register">
+    <div class="wrap pagehead">
+      <span class="eyebrow">Wissenschaftliches Verzeichnis</span>
+      <h2 class="sec">Register</h2>
+      <p class="intro">Das vollständige alphabetische Verzeichnis aller Fachbegriffe — mit Kategorie und Angabe, welche Lese-Ebenen (F&nbsp;Fachlich · V&nbsp;Verständlich · E&nbsp;Einfache Sprache · P&nbsp;Praxis) bereits vorliegen. Klick auf einen Eintrag öffnet die volle Erläuterung.</p>
+      <div class="reg-tools">
+        <div class="reg-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="var(--ink-faint)" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="var(--ink-faint)" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="regQ" type="search" placeholder="Im Register filtern …" aria-label="Register filtern">
+        </div>
+        <span class="reg-count" id="regCount"></span>
+      </div>
+      <div id="regList"></div>
+
+      <span class="eyebrow" style="display:block; margin-top:52px;">Nach Systematik</span>
+      <h2 class="sec" style="font-size:clamp(1.4rem,3vw,1.9rem)">Kategorien im Überblick</h2>
+      <div class="syst" id="systList"></div>
+    </div>
+  </section>
+
+  <!-- ============ JOURNAL ============ -->
+  <section class="route" id="route-journal">
+    <div class="wrap pagehead">
+      <span class="eyebrow">Ausblick</span>
+      <h2 class="sec">Vom Lexikon zum begutachteten Fachjournal.</h2>
+      <p class="intro">SozialWiki ist als wachsende Plattform gedacht: Das Lexikon schafft Reichweite, Autor:innen und Themen — daraus wächst ein Open-Access-Journal mit Peer-Review und DOIs.</p>
+    </div>
+    <div class="journal">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Das Prinzip</span>
+          <h2 class="sec" style="font-size:clamp(1.5rem,3vw,2rem)">Lexikon und Journal, die sich gegenseitig tragen.</h2>
+          <p>Weil jeder Eintrag von Tag&nbsp;eins an eine feste, zitierfähige Adresse und saubere Metadaten trägt, ist der Weg zum Journal technisch kurz.</p>
+          <ul>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Feste URLs &amp; APA-Zitiervorschlag pro Eintrag</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Namentliche Autor:innen als Brücke zur Reputation</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Lexikon &harr; Journal wechselseitig verlinkt</li>
+          </ul>
+        </div>
+        <div class="roadmap" aria-label="Ausbaustufen">
+          <div class="step"><div class="n">1</div><div><span class="tag">Start</span><h4>Das Lexikon</h4><p>Feste Eintragsstruktur, Live-Suche, mehrere Lese-Ebenen. Zitierfähig ab dem ersten Begriff.</p></div></div>
+          <div class="step"><div class="n">2</div><div><span class="tag">Aufbau</span><h4>Redaktion &amp; Autor:innen</h4><p>Fachautor:innen schreiben, eine Redaktion gibt frei. Jeder Eintrag mit Namen und Datum.</p></div></div>
+          <div class="step"><div class="n">3</div><div><span class="tag">Vision</span><h4>Das Journal</h4><p>Begutachtete Artikel, eigene ISSN, DOIs, Peer-Review — getragen von der Community des Lexikons.</p></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="wrap" style="padding-top:40px">
+      <span class="eyebrow">Geplante Rubriken</span>
+      <h2 class="sec" style="font-size:clamp(1.4rem,3vw,1.9rem)">Was das Journal einmal führen soll</h2>
+      <div class="feat">
+        <div class="c"><h4>Originalbeiträge</h4><p>Peer-Review-begutachtete Fachartikel aus Forschung und Theorie der Sozialen Arbeit.</p></div>
+        <div class="c"><h4>Praxisforschung</h4><p>Berichte aus der Praxis, evaluierte Projekte, Werkstattberichte aus den Arbeitsfeldern.</p></div>
+        <div class="c"><h4>Rezensionen</h4><p>Besprechungen aktueller Fachliteratur — eng verzahnt mit den Quellen des Lexikons.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NEWS ============ -->
+  <section class="route" id="route-news">
+    <div class="wrap pagehead">
+      <span class="eyebrow">Aus dem Feld</span>
+      <h2 class="sec">Aktuelles aus der Sozialen Arbeit</h2>
+      <p class="intro">Debatten, Entwicklungen und Themen, die die Profession bewegen — kurz eingeordnet und, wo möglich, mit den passenden Lexikon-Begriffen verknüpft.</p>
+      <div class="demo-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span><b>Demo-Bereich.</b> Die folgenden Meldungen sind Beispiele, um Aufbau und Gefühl zu zeigen — keine tagesaktuellen Nachrichten. Im echten Portal würden hier redaktionell gepflegte Beiträge oder ein eingebundener Nachrichten-Feed erscheinen.</span>
+      </div>
+      <div class="news-grid" id="newsGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ ÜBER / MITMACHEN ============ -->
+  <section class="route" id="route-ueber">
+    <div class="wrap pagehead">
+      <span class="eyebrow">Über das Projekt</span>
+      <h2 class="sec">Ein Lexikon, das für alle geschrieben ist.</h2>
+      <p class="intro">SozialWiki will Fachwissen der Sozialen Arbeit an einem Ort bündeln — wissenschaftlich fundiert, aber so aufbereitet, dass Studierende, Fachkräfte <em>und</em> die Menschen, um die es geht, es nutzen können. Genau dafür gibt es die Lese-Ebenen.</p>
+      <div class="feat">
+        <div class="c">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+          <h4>Fundiert</h4><p>Jeder Begriff mit Theoriebezug, Quellenangaben und zitierfähigem Beleg — geeignet für Studium und Lehre.</p>
+        </div>
+        <div class="c">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <h4>Für alle</h4><p>Dieselbe Sache — mehrfach erklärt: fachlich, verständlich und in Einfacher Sprache. Niemand wird über- oder unterfordert.</p>
+        </div>
+        <div class="c">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Offen &amp; wachsend</h4><p>Open Access, mit Autor:innen aus der Fachcommunity — und langfristig als Basis für ein eigenes Fachjournal.</p>
+        </div>
+      </div>
+      <div class="cta-band">
+        <div>
+          <h3>Prototyp — hier entsteht gerade etwas.</h3>
+          <p>Diese Seite ist ein früher, klickbarer Entwurf. Als Nächstes folgen Datenbank, Autor:innen-Login und eine Veröffentlichung über GitHub Pages mit eigener Domain.</p>
+        </div>
+        <a class="btn" href="#/" data-nav>Zum Lexikon</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-inner">
+      <a class="brand" href="#/" data-nav aria-label="SozialWiki">
+        <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="14" cy="14" r="7" stroke="var(--teal)" stroke-width="2.4"/>
+          <circle cx="26" cy="26" r="7" stroke="var(--clay)" stroke-width="2.4"/>
+          <path d="M18.5 18.5 L21.5 21.5" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+        <span><b>Sozial<span style="color:var(--teal)">Wiki</span></b><small>Fachlexikon der Sozialen Arbeit</small></span>
+      </a>
+      <nav class="foot-nav">
+        <a href="#/" data-nav>Lexikon</a><a href="#/register" data-nav>Register</a>
+        <a href="#/journal" data-nav>Journal</a><a href="#/news" data-nav>News</a><a href="#/ueber" data-nav>Über</a>
+      </nav>
+    </div>
+    <p class="disc">Hinweis: Beispiel-Inhalte zu Demonstrationszwecken. Die fachlichen Angaben sind sorgfältig recherchiert, aber noch nicht redaktionell begutachtet und ersetzen keine Fachliteratur. Prototyp · 2026 · Open-Access-Idee.</p>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const LEVELS = { fachlich:"Fachlich", verstaendlich:"Verständlich", einfach:"Einfache Sprache", praxis:"Praxis" };
+const LVL_SHORT = { fachlich:"F", verstaendlich:"V", einfach:"E", praxis:"P" };
+
+const ENTRIES = [
+  { term:"Empowerment", kat:"Konzepte & Haltungen",
+    kurz:"Menschen darin unterstützen, ihre Angelegenheiten wieder selbstbestimmt zu gestalten.",
+    fachlich:"Empowerment (dt. „Selbstbefähigung“) bezeichnet in der Sozialen Arbeit zugleich eine professionelle Haltung und ein Bündel von Handlungsstrategien, die Menschen und Gruppen zur (Wieder-)Aneignung von Kontrolle über die eigene Lebenssituation verhelfen. Der Ansatz geht auf die US-amerikanische Gemeinwesenarbeit (Rappaport, Solomon) zurück und verschiebt den fachlichen Blick systematisch von Defiziten hin zu den Ressourcen und Stärken der Adressat:innen.",
+    verstaendlich:"Empowerment heißt: Menschen nicht abhängig machen, sondern ihnen helfen, ihr Leben wieder selbst in die Hand zu nehmen. Fachkräfte treten dabei bewusst einen Schritt zurück. Sie geben keine fertigen Lösungen vor, sondern unterstützen Menschen dabei, eigene Stärken zu entdecken und zu nutzen.",
+    einfach:"Empowerment bedeutet: Ein Mensch bekommt Hilfe, damit er sein Leben selbst bestimmen kann. Die Fachkraft sagt nicht, was zu tun ist. Sie hilft dem Menschen, selbst zu entscheiden. So wird der Mensch stark.",
+    praxis:"In einer Suchtberatung fragt die Fachkraft nicht nur „Was ist Ihr Problem?“, sondern auch „Was hat Ihnen früher schon einmal geholfen, eine schwierige Zeit zu überstehen?“ — und knüpft gezielt an diese bereits vorhandenen Bewältigungsstrategien an.",
+    verwandt:["Ressourcenorientierung","Partizipation","Klientenzentrierung"],
+    quellen:["Herriger, N. (2020). Empowerment in der Sozialen Arbeit. Eine Einführung (6. Aufl.). Stuttgart: Kohlhammer.","Rappaport, J. (1981). In praise of paradox. American Journal of Community Psychology, 9(1), 1–25."],
+    autor:"Red. SozialWiki" },
+  { term:"Lebensweltorientierung", kat:"Theorien & Ansätze",
+    kurz:"Hilfen am konkreten Alltag der Menschen ausrichten, nicht an institutionellen Logiken.",
+    fachlich:"Die Lebensweltorientierung nach Hans Thiersch ist eines der einflussreichsten handlungstheoretischen Konzepte der deutschsprachigen Sozialen Arbeit. Sie fordert, Hilfen an den konkreten Alltagserfahrungen, Deutungen und Ressourcen der Adressat:innen auszurichten statt an institutionellen Logiken. Zentrale Struktur- und Handlungsmaximen sind u. a. Prävention, Alltagsnähe, Regionalisierung, Integration und Partizipation.",
+    verstaendlich:"Menschen in schwierigen Lagen haben immer einen ganz konkreten Alltag — eine Wohnung, eine Familie, einen Stadtteil, feste Gewohnheiten. Lebensweltorientierung heißt: Hilfe muss zu diesem Alltag passen und dort ansetzen, wo die Menschen tatsächlich leben, statt sie in fremde Abläufe zu pressen.",
+    einfach:"Jeder Mensch hat sein eigenes Leben: seine Wohnung, seine Familie, seinen Alltag. Die Hilfe soll zu diesem Leben passen. Die Fachkraft schaut zuerst, wie der Mensch wirklich lebt. Dann hilft sie dort.",
+    praxis:"Statt eine belastete Familie immer wieder ins Amt zu bestellen, macht die Sozialpädagogische Familienhilfe Hausbesuche: Die Fachkräfte lernen Küche, Tagesablauf und Nachbarschaft kennen — und setzen genau dort mit passender Unterstützung an.",
+    verwandt:["Sozialraumorientierung","Empowerment","Niedrigschwelligkeit"],
+    quellen:["Thiersch, H. (2014). Lebensweltorientierte Soziale Arbeit (9. Aufl.). Weinheim: Beltz Juventa.","Grunwald, K. & Thiersch, H. (Hrsg.) (2016). Praxishandbuch Lebensweltorientierte Soziale Arbeit. Weinheim: Beltz Juventa."],
+    autor:"Red. SozialWiki" },
+  { term:"Case Management", kat:"Methoden",
+    kurz:"Komplexe Hilfen im Einzelfall koordinieren — eine feste Person steuert den Prozess.",
+    fachlich:"Case Management ist ein methodisches Handlungskonzept zur Steuerung komplexer Unterstützungsprozesse im Einzelfall. Über die Phasen Intake, Assessment, Hilfe-/Zielplanung, Umsetzung mit Monitoring und Evaluation koordiniert die Fachkraft unterschiedliche Leistungen und Akteure entlang des individuellen Bedarfs — in der charakteristischen Doppelfunktion von anwaltschaftlicher Einzelfallhilfe und ressourcenbewusster Systemsteuerung.",
+    verstaendlich:"Wenn ein Mensch viele Hilfen gleichzeitig braucht — Arzt, Amt, Wohnung, Schulden, Therapie — verliert man leicht den Überblick. Ein Case Manager ist wie ein Lotse: eine feste Ansprechperson, die alles koordiniert, damit die Hilfen ineinandergreifen und niemand durchs Raster fällt.",
+    einfach:"Manche Menschen brauchen viele Hilfen auf einmal. Das ist unübersichtlich. Eine Person hilft, alles zu ordnen. Diese Person heißt Case Manager. Sie ist die feste Ansprechperson und behält den Überblick.",
+    praxis:"Nach einer Haftentlassung koordiniert die Case Managerin gleichzeitig Bewährungshilfe, Jobcenter, Suchtberatung und Wohnungssuche — mit einem gemeinsamen Hilfeplan und regelmäßigen, gemeinsam überprüften Zielen.",
+    verwandt:["Hilfeplanung","Doppeltes Mandat","Netzwerkarbeit"],
+    quellen:["Neuffer, M. (2013). Case Management. Soziale Arbeit mit Einzelnen und Familien (5. Aufl.). Weinheim: Beltz Juventa.","DGCC (2020). Rahmenempfehlungen zum Handlungskonzept Case Management. Heidelberg."],
+    autor:"Red. SozialWiki" },
+  { term:"Doppeltes Mandat", kat:"Profession & Ethik",
+    kurz:"Das eingebaute Spannungsfeld zwischen Hilfe und Kontrolle — erweitert zum Tripelmandat.",
+    fachlich:"Das Doppelte Mandat beschreibt das strukturelle Spannungsfeld der Sozialen Arbeit zwischen Hilfe und Kontrolle: Fachkräfte handeln zugleich im Auftrag der Adressat:innen (Hilfe, Anwaltschaft) und im Auftrag von Gesellschaft bzw. Staat (Kontrolle, Normsicherung). Silvia Staub-Bernasconi erweitert dies zum „Tripelmandat“, das als drittes Mandat die Verpflichtung auf die Menschenrechte und den fachlich-ethischen Verhaltenskodex der Profession selbst hinzufügt.",
+    verstaendlich:"Sozialarbeiter:innen sitzen oft zwischen zwei Stühlen: Einerseits wollen sie einem Menschen helfen, andererseits müssen sie im Auftrag des Staates auch kontrollieren — etwa prüfen, ob es einem Kind gut geht. Dieses eingebaute Spannungsverhältnis nennt man das doppelte Mandat.",
+    einfach:"Sozialarbeiter:innen haben zwei Aufgaben zugleich. Sie helfen Menschen. Und sie müssen im Auftrag des Staates auch aufpassen, zum Beispiel auf Kinder. Diese zwei Aufgaben passen nicht immer gut zusammen.",
+    praxis:"Eine Fachkraft im Jugendamt begleitet eine überforderte Mutter unterstützend — muss aber gleichzeitig einschätzen, ob das Kind gefährdet ist, und notfalls Schutzmaßnahmen einleiten. Hilfe und Kontrolle liegen in einer Person.",
+    verwandt:["Tripelmandat","Berufsethik","Case Management"],
+    quellen:["Staub-Bernasconi, S. (2018). Soziale Arbeit als Handlungswissenschaft (2. Aufl.). Opladen: Barbara Budrich (UTB).","Böhnisch, L. & Lösch, H. (1973). Das Handlungsverständnis des Sozialarbeiters. In: Otto/Schneider (Hrsg.), Gesellschaftliche Perspektiven der Sozialarbeit."],
+    autor:"Red. SozialWiki" },
+  { term:"Tripelmandat", kat:"Profession & Ethik",
+    kurz:"Die Erweiterung des Doppelmandats um ein drittes: die Menschenrechte und die Profession selbst.",
+    fachlich:"Das von Silvia Staub-Bernasconi geprägte Tripelmandat ergänzt das klassische Doppelmandat (Hilfe/Adressat:innen und Kontrolle/Gesellschaft) um ein drittes Mandat: die Verpflichtung der Sozialen Arbeit auf Menschenrechte und soziale Gerechtigkeit sowie auf einen eigenen wissenschaftlich und ethisch begründeten Verhaltenskodex. Damit gewinnt die Profession eine Legitimationsbasis, von der aus sie auch gegen Auftraggeber Position beziehen kann.",
+    verstaendlich:"Zum Spannungsfeld „helfen und kontrollieren“ kommt ein dritter Auftrag: Soziale Arbeit ist nicht nur dem Klienten und dem Staat verpflichtet, sondern auch den Menschenrechten und ihrer eigenen fachlichen Ethik. Das gibt Fachkräften Rückhalt, um im Zweifel auch „Nein“ zu sagen.",
+    verwandt:["Doppeltes Mandat","Berufsethik"],
+    quellen:["Staub-Bernasconi, S. (2018). Soziale Arbeit als Handlungswissenschaft (2. Aufl.). Opladen: Barbara Budrich (UTB)."],
+    autor:"Red. SozialWiki" },
+  { term:"Berufsethik", kat:"Profession & Ethik",
+    kurz:"Der werte- und menschenrechtsbasierte Handlungsrahmen der Profession.",
+    fachlich:"Die Berufsethik der Sozialen Arbeit formuliert verbindliche Werte, Prinzipien und Standards professionellen Handelns — insbesondere Menschenwürde, soziale Gerechtigkeit, Selbstbestimmung und Nichtdiskriminierung. Sie ist u. a. in der internationalen Ethik-Erklärung (IFSW/IASSW) und der Berufsethik des DBSH kodifiziert und dient als Orientierung in Dilemmasituationen.",
+    verstaendlich:"Soziale Arbeit ist kein beliebiges Handeln, sondern an feste Werte gebunden: Würde, Gerechtigkeit, Selbstbestimmung. Die Berufsethik hält diese Werte schriftlich fest und gibt Fachkräften Halt, wenn sie schwierige Entscheidungen treffen müssen.",
+    verwandt:["Tripelmandat","Doppeltes Mandat"],
+    quellen:["DBSH (2014). Berufsethik des DBSH. Ethik und Werte. Berlin: Deutscher Berufsverband für Soziale Arbeit.","IFSW/IASSW (2018). Global Social Work Statement of Ethical Principles."],
+    autor:"Red. SozialWiki" },
+  { term:"Adultismus", kat:"Diskriminierung & Vielfalt",
+    kurz:"Die oft unbemerkte Ungleichbehandlung von jungen Menschen gegenüber Erwachsenen.",
+    fachlich:"Adultismus bezeichnet die machtbasierte Ungleichbehandlung und Abwertung von Kindern und Jugendlichen allein aufgrund ihres Alters. Als eine der frühesten erfahrenen Diskriminierungsformen prägt er Erwartungen, Sprache und Institutionen; die Soziale Arbeit reflektiert ihn insbesondere im Kontext von Partizipation, Kinderrechten und machtsensibler Pädagogik.",
+    verstaendlich:"Erwachsene entscheiden oft über Kinder hinweg — nach dem Motto „Du bist zu klein, das verstehst du noch nicht“. Adultismus meint genau diese selbstverständliche Machtungleichheit zwischen Erwachsenen und jungen Menschen, die selten hinterfragt wird.",
+    verwandt:["Partizipation","Intersektionalität","Anti-Bias-Ansatz"],
+    quellen:["Ritz, M. (2008). Adultismus – (un)bekanntes Phänomen. In: Wagner (Hrsg.), Handbuch Kinderwelten. Freiburg: Herder."],
+    autor:"Red. SozialWiki" },
+  { term:"Resilienz", kat:"Konzepte & Haltungen",
+    kurz:"Die Fähigkeit, Krisen zu bewältigen und dabei auf schützende Faktoren zurückzugreifen.",
+    fachlich:"Resilienz beschreibt die psychische Widerstandsfähigkeit, mit der Menschen belastende Lebensumstände vergleichsweise unbeschadet bewältigen. Sie gilt nicht als feste Eigenschaft, sondern als dynamisches Zusammenspiel von Risiko- und Schutzfaktoren auf individueller, familiärer und sozialer Ebene — was sie für ressourcen- und präventionsorientierte Soziale Arbeit anschlussfähig macht.",
+    verstaendlich:"Manche Menschen stehen nach schweren Schicksalsschlägen erstaunlich stabil wieder auf. Resilienz ist die Fähigkeit, Krisen zu meistern. Wichtig: Sie ist keine angeborene Stärke, sondern lässt sich fördern — etwa durch verlässliche Beziehungen.",
+    einfach:"Resilienz heißt: innere Stärke in schweren Zeiten. Manche Menschen kommen nach einer Krise wieder gut auf die Beine. Das kann man lernen. Vor allem gute Beziehungen zu anderen Menschen helfen dabei.",
+    verwandt:["Ressourcenorientierung","Salutogenese","Empowerment"],
+    quellen:["Wustmann Seiler, C. (2019). Resilienz. Widerstandsfähigkeit von Kindern in Tageseinrichtungen fördern. Berlin: Cornelsen."],
+    autor:"Red. SozialWiki" },
+  { term:"Salutogenese", kat:"Konzepte & Haltungen",
+    kurz:"Die Frage umdrehen: Was hält Menschen gesund — statt nur, was macht sie krank?",
+    fachlich:"Das von Aaron Antonovsky entwickelte Modell der Salutogenese fragt nach den Faktoren, die Gesundheit erhalten und fördern, statt allein nach Krankheitsursachen (Pathogenese). Zentral ist das „Kohärenzgefühl“ (sense of coherence) aus Verstehbarkeit, Handhabbarkeit und Sinnhaftigkeit. Für die Soziale Arbeit liefert der Ansatz eine ressourcen- und gesundheitsförderliche Grundperspektive.",
+    verstaendlich:"Statt zu fragen „Was macht Menschen krank?“, fragt die Salutogenese: „Was hält Menschen eigentlich gesund?“ Entscheidend ist das Gefühl, dass das eigene Leben verständlich, machbar und sinnvoll ist. Genau das lässt sich stärken.",
+    verwandt:["Resilienz","Ressourcenorientierung","Prävention"],
+    quellen:["Antonovsky, A. (1997). Salutogenese. Zur Entmystifizierung der Gesundheit. Tübingen: dgvt-Verlag."],
+    autor:"Red. SozialWiki" },
+  { term:"Partizipation", kat:"Konzepte & Haltungen",
+    kurz:"Beteiligung von Menschen an Entscheidungen, die ihr Leben betreffen.",
+    fachlich:"Partizipation meint die aktive Teilhabe von Adressat:innen an Entscheidungen, die ihre eigene Lebenssituation betreffen. Sie reicht — etwa entlang der „Stufen der Beteiligung“ — von bloßer Information über Mitwirkung bis zur echten Mitentscheidung und Selbstverwaltung und gilt als fachlicher wie rechtlicher Standard (u. a. § 8 SGB VIII).",
+    verstaendlich:"Über Menschen soll nicht einfach entschieden werden — sie sollen mitreden dürfen, wenn es um ihr eigenes Leben geht. Partizipation heißt Beteiligung. Dabei gibt es Abstufungen: von „nur informiert werden“ bis „wirklich mitentscheiden“.",
+    einfach:"Beteiligung heißt: Menschen dürfen mitreden. Wenn etwas ihr Leben betrifft, sollen sie mitentscheiden. Die Fachkraft fragt: Was möchtest du? Was ist dir wichtig?",
+    verwandt:["Empowerment","Adultismus","Inklusion"],
+    quellen:["Straßburger, G. & Rieger, J. (Hrsg.) (2019). Partizipation kompakt (2. Aufl.). Weinheim: Beltz Juventa."],
+    autor:"Red. SozialWiki" },
+  { term:"Niedrigschwelligkeit", kat:"Methoden",
+    kurz:"Angebote so gestalten, dass Zugangshürden für die Zielgruppe möglichst klein sind.",
+    fachlich:"Niedrigschwelligkeit bezeichnet die bewusste Reduktion von Zugangsbarrieren zu Hilfeangeboten — räumlich, zeitlich, finanziell, sprachlich und bürokratisch. Ziel ist es, gerade schwer erreichbare oder belastete Zielgruppen ohne verpflichtende Vorbedingungen (z. B. Abstinenz, Anmeldung) anzusprechen und Kontakt überhaupt erst zu ermöglichen.",
+    verstaendlich:"Viele Hilfsangebote sind mit Hürden verbunden: Termine, Anträge, Voraussetzungen. Niedrigschwellig heißt, diese Hürden absichtlich klein zu halten — damit auch Menschen ankommen, die sonst gar nicht erst kämen.",
+    verwandt:["Lebensweltorientierung","Sozialraumorientierung","Gemeinwesenarbeit"],
+    quellen:["Deutscher Verein (2019). Empfehlungen zu niedrigschwelligen Angeboten. Berlin."],
+    autor:"Red. SozialWiki" },
+  { term:"Inklusion", kat:"Konzepte & Haltungen",
+    kurz:"Nicht Menschen an Systeme anpassen, sondern Systeme für alle Menschen öffnen.",
+    fachlich:"Inklusion beschreibt das Leitbild einer Gesellschaft, in der alle Menschen unabhängig von Merkmalen wie Behinderung, Herkunft oder Geschlecht selbstverständlich und gleichberechtigt teilhaben. Anders als Integration verlangt sie nicht die Anpassung des Individuums an bestehende Strukturen, sondern die Veränderung der Strukturen selbst (vgl. UN-BRK, 2009).",
+    verstaendlich:"Bei Integration muss sich der einzelne Mensch anpassen, um dazuzugehören. Inklusion dreht das um: Nicht der Mensch ist das Problem, sondern Barrieren. Also müssen sich Schule, Arbeitswelt und Gesellschaft ändern — für alle.",
+    einfach:"Inklusion heißt: Alle Menschen gehören dazu. Egal ob mit oder ohne Behinderung. Nicht der Mensch muss sich ändern. Die Schule, die Arbeit und die Gesellschaft müssen sich ändern. Für alle.",
+    verwandt:["Partizipation","Diversität","Intersektionalität"],
+    quellen:["Vereinte Nationen (2009). UN-Behindertenrechtskonvention (UN-BRK), dt. Fassung."],
+    autor:"Red. SozialWiki" },
+  { term:"Sozialraumorientierung", kat:"Theorien & Ansätze",
+    kurz:"Den Stadtteil und sein Umfeld als Ansatzpunkt professionellen Handelns nutzen.",
+    fachlich:"Die Sozialraumorientierung richtet professionelles Handeln nicht nur am Einzelfall, sondern am sozialen Raum — Quartier, Netzwerke, Ressourcen — aus. Leitend sind der Wille der Menschen, die Aktivierung von Selbsthilfe, ressortübergreifende Kooperation sowie die Nutzung und Gestaltung des Sozialraums (Fachkonzept nach Hinte/Früchtel).",
+    verstaendlich:"Menschen leben nicht im luftleeren Raum, sondern in einem Stadtteil mit Nachbarn, Vereinen, Treffpunkten. Sozialraumorientierung nutzt genau dieses Umfeld: Man stärkt die Ressourcen des Quartiers, statt nur einzelne Personen zu „behandeln“.",
+    verwandt:["Lebensweltorientierung","Gemeinwesenarbeit","Netzwerkarbeit"],
+    quellen:["Hinte, W. & Treeß, H. (2014). Sozialraumorientierung in der Jugendhilfe (3. Aufl.). Weinheim: Beltz Juventa."],
+    autor:"Red. SozialWiki" },
+  { term:"Ressourcenorientierung", kat:"Konzepte & Haltungen",
+    kurz:"Den Blick bewusst auf Stärken und Möglichkeiten richten statt auf Defizite.",
+    fachlich:"Ressourcenorientierung ist eine fachliche Grundhaltung, die vorhandene Stärken, Fähigkeiten und Unterstützungssysteme der Adressat:innen konsequent in den Mittelpunkt stellt. Sie bildet die handlungslogische Basis für Empowerment und lösungsorientierte Ansätze und steht in bewusstem Kontrast zu einer rein defizit- und problemzentrierten Perspektive.",
+    verstaendlich:"Man kann auf Menschen schauen und nur ihre Probleme sehen — oder man sucht bewusst nach dem, was schon funktioniert und trägt. Ressourcenorientierung wählt den zweiten Weg: Was kann die Person? Wer und was hilft ihr bereits?",
+    verwandt:["Empowerment","Resilienz","Soziale Diagnostik"],
+    quellen:["Pantuček-Eisenbacher, P. (2019). Soziale Diagnostik. Verfahren für die Praxis Sozialer Arbeit (4. Aufl.). Wien: Böhlau."],
+    autor:"Red. SozialWiki" },
+  { term:"Intersektionalität", kat:"Diskriminierung & Vielfalt",
+    kurz:"Diskriminierungsformen wirken nicht isoliert, sondern verschränkt zusammen.",
+    fachlich:"Intersektionalität analysiert, wie verschiedene Diskriminierungs- und Ungleichheitsdimensionen — etwa Geschlecht, Klasse, Herkunft, Behinderung — nicht getrennt, sondern verschränkt und wechselseitig verstärkend wirken. Der von Kimberlé Crenshaw geprägte Begriff hilft der Sozialen Arbeit, komplexe Benachteiligungen differenziert statt vereinfachend zu erfassen.",
+    verstaendlich:"Eine Person kann gleichzeitig von mehreren Benachteiligungen betroffen sein — etwa als Frau, als Migrantin und als arm. Diese Formen addieren sich nicht nur, sie verweben sich. Intersektionalität nimmt genau dieses Zusammenspiel in den Blick.",
+    verwandt:["Inklusion","Diversität","Soziale Ungleichheit"],
+    quellen:["Crenshaw, K. (1989). Demarginalizing the Intersection of Race and Sex. University of Chicago Legal Forum, 1989(1), 139–167."],
+    autor:"Red. SozialWiki" },
+  { term:"Netzwerkarbeit", kat:"Methoden",
+    kurz:"Soziale Beziehungen und Institutionen gezielt verbinden und aktivieren.",
+    fachlich:"Netzwerkarbeit umfasst Methoden zur Analyse, Aktivierung und Gestaltung sozialer Beziehungsgeflechte — sowohl der persönlichen Netzwerke von Adressat:innen (Familie, Freundeskreis) als auch professioneller Kooperationsnetzwerke zwischen Institutionen. Ziel ist es, tragfähige Unterstützungssysteme sichtbar zu machen und zu stärken.",
+    verstaendlich:"Kein Mensch steht allein — um jeden herum gibt es Familie, Freunde, Nachbarn, Vereine, Ämter. Netzwerkarbeit macht diese Verbindungen sichtbar und stärkt sie, damit Unterstützung nicht nur von der Fachkraft, sondern aus dem ganzen Umfeld kommt.",
+    verwandt:["Sozialraumorientierung","Case Management","Gemeinwesenarbeit"],
+    autor:"Red. SozialWiki" },
+  { term:"Hilfeplanung", kat:"Methoden",
+    kurz:"Ziele und Hilfen gemeinsam mit den Betroffenen aushandeln und festhalten.",
+    fachlich:"Hilfeplanung ist ein dialogisches Verfahren zur Feststellung des Bedarfs, zur gemeinsamen Zielvereinbarung und zur Steuerung von Hilfen — in der Kinder- und Jugendhilfe rechtlich verankert (§ 36 SGB VIII). Kennzeichnend sind die Beteiligung der Adressat:innen, regelmäßige Fortschreibung und die Verbindlichkeit vereinbarter Ziele.",
+    verstaendlich:"Hilfe soll nicht über den Kopf der Menschen hinweg geplant werden. In der Hilfeplanung setzen sich Fachkraft und Betroffene zusammen, klären den Bedarf, vereinbaren gemeinsam Ziele und überprüfen regelmäßig, ob sie erreicht werden.",
+    verwandt:["Case Management","Partizipation"],
+    quellen:["§ 36 SGB VIII – Mitwirkung, Hilfeplan.","Merchel, J. (2019). Hilfeplanung bei den Hilfen zur Erziehung (5. Aufl.). Stuttgart: Kohlhammer."],
+    autor:"Red. SozialWiki" },
+  { term:"Gemeinwesenarbeit", kat:"Methoden",
+    kurz:"Nicht am Einzelfall, sondern am Stadtteil und seiner Gemeinschaft ansetzen.",
+    fachlich:"Gemeinwesenarbeit (GWA) ist neben Einzelfallhilfe und sozialer Gruppenarbeit eine klassische Methode der Sozialen Arbeit. Sie zielt auf die Aktivierung, Beteiligung und Selbstorganisation von Bewohner:innen eines Sozialraums, um kollektive Lebensbedingungen zu verbessern — mit einem oft (sozial-)politischen, strukturverändernden Anspruch.",
+    verstaendlich:"Manche Probleme betreffen nicht einen einzelnen Menschen, sondern einen ganzen Stadtteil — schlechte Wohnungen, fehlende Treffpunkte, wenig Angebote. Gemeinwesenarbeit setzt genau hier an: Sie bringt Menschen zusammen, damit sie ihre Umgebung gemeinsam verbessern.",
+    verwandt:["Sozialraumorientierung","Netzwerkarbeit","Partizipation"],
+    quellen:["Hinte, W., Lüttringhaus, M. & Oelschlägel, D. (2007). Grundlagen und Standards der Gemeinwesenarbeit. Weinheim: Juventa."],
+    autor:"Red. SozialWiki" },
+  { term:"Klientenzentrierung", kat:"Konzepte & Haltungen",
+    kurz:"Eine Haltung aus Wertschätzung, Echtheit und Einfühlung — nach Carl Rogers.",
+    fachlich:"Die auf Carl Rogers zurückgehende klientenzentrierte Haltung prägt Beratung und Beziehungsgestaltung in der Sozialen Arbeit maßgeblich. Ihre drei Grundhaltungen — bedingungslose positive Wertschätzung, Kongruenz (Echtheit) und Empathie — schaffen die Beziehungsbasis, auf der Menschen sich öffnen und Entwicklung möglich wird.",
+    verstaendlich:"Eine gute Beziehung ist die Grundlage jeder Hilfe. Klientenzentrierung heißt: Menschen ohne Bedingungen wertschätzen, ihnen ehrlich und echt begegnen und sich wirklich in sie einfühlen. Erst dann öffnen sie sich.",
+    verwandt:["Empowerment","Ressourcenorientierung"],
+    quellen:["Rogers, C. R. (1972). Die klientenzentrierte Gesprächspsychotherapie. München: Kindler."],
+    autor:"Red. SozialWiki" },
+  { term:"Prävention", kat:"Konzepte & Haltungen",
+    kurz:"Probleme verhindern, bevor sie entstehen oder sich verfestigen.",
+    fachlich:"Prävention bezeichnet vorbeugendes Handeln zur Vermeidung, Früherkennung oder Begrenzung von Problemlagen. Unterschieden werden primäre (vor Entstehung), sekundäre (frühe Anzeichen) und tertiäre Prävention (Verhinderung von Verschlimmerung/Rückfall). In der Sozialen Arbeit ist Prävention eng mit Lebensweltorientierung und Gesundheitsförderung verknüpft.",
+    verstaendlich:"Es ist besser, ein Problem zu verhindern, als es später aufwendig zu lösen. Prävention heißt vorbeugen: früh ansetzen, bevor aus einer Schwierigkeit eine Krise wird — zum Beispiel durch frühe Hilfen für junge Familien.",
+    verwandt:["Salutogenese","Lebensweltorientierung"],
+    autor:"Red. SozialWiki" },
+  { term:"Soziale Ungleichheit", kat:"Theorien & Ansätze",
+    kurz:"Die ungleiche Verteilung von Lebenschancen — Kernthema der Sozialen Arbeit.",
+    fachlich:"Soziale Ungleichheit bezeichnet die strukturell bedingte, ungleiche Verteilung wertvoller Güter und Lebenschancen (Einkommen, Bildung, Gesundheit, Teilhabe) zwischen gesellschaftlichen Gruppen. Als zentrale Bezugsgröße Sozialer Arbeit verweist sie auf Armut, Exklusion und Benachteiligung — und begründet den professionellen Auftrag sozialer Gerechtigkeit.",
+    verstaendlich:"Nicht alle Menschen haben die gleichen Startchancen: Wer in Armut aufwächst, hat es bei Bildung, Gesundheit und Arbeit oft schwerer. Diese ungleiche Verteilung von Chancen nennt man soziale Ungleichheit — und sie zu verringern, ist ein Kernauftrag der Sozialen Arbeit.",
+    verwandt:["Intersektionalität","Inklusion","Gemeinwesenarbeit"],
+    quellen:["Kronauer, M. (2010). Exklusion. Die Gefährdung des Sozialen im hoch entwickelten Kapitalismus (2. Aufl.). Frankfurt a. M.: Campus."],
+    autor:"Red. SozialWiki" },
+  { term:"Stigmatisierung", kat:"Diskriminierung & Vielfalt",
+    kurz:"Wenn ein Merkmal zum abwertenden Etikett wird, das eine Person herabsetzt.",
+    fachlich:"Stigmatisierung beschreibt den Prozess, in dem einem Merkmal (z. B. psychische Erkrankung, Wohnungslosigkeit, Suchterfahrung) eine tief diskreditierende Bedeutung zugeschrieben wird, sodass die betroffene Person sozial abgewertet und ausgegrenzt wird. Erving Goffmans Analyse des „beschädigten Identität“ ist hier grundlegend; Soziale Arbeit wirkt Stigmatisierung u. a. durch Entstigmatisierung und Empowerment entgegen.",
+    verstaendlich:"Ein einziges Merkmal — etwa „obdachlos“ oder „psychisch krank“ — kann dazu führen, dass ein Mensch nur noch darauf reduziert und abgewertet wird. Das nennt man Stigmatisierung. Soziale Arbeit versucht, solche Etiketten aufzubrechen.",
+    verwandt:["Intersektionalität","Soziale Ungleichheit","Empowerment"],
+    quellen:["Goffman, E. (1975). Stigma. Über Techniken der Bewältigung beschädigter Identität. Frankfurt a. M.: Suhrkamp."],
+    autor:"Red. SozialWiki" },
+  { term:"Diversität", kat:"Diskriminierung & Vielfalt",
+    kurz:"Vielfalt menschlicher Lebenslagen als Normalität anerkennen und wertschätzen.",
+    fachlich:"Diversität (Diversity) bezeichnet die Vielfalt sozialer Zugehörigkeiten und Lebenslagen entlang von Dimensionen wie Geschlecht, Alter, Herkunft, Religion, Behinderung oder sexueller Orientierung. Ein diversitätsbewusster Ansatz in der Sozialen Arbeit reflektiert Machtverhältnisse und zielt auf gleichberechtigte Teilhabe statt auf bloße Toleranz von „Andersheit“.",
+    verstaendlich:"Menschen sind verschieden — in Herkunft, Alter, Geschlecht, Religion, Fähigkeiten. Diversität heißt, diese Vielfalt als etwas Normales und Wertvolles zu sehen und dafür zu sorgen, dass alle die gleichen Chancen bekommen.",
+    verwandt:["Inklusion","Intersektionalität","Anti-Bias-Ansatz"],
+    autor:"Red. SozialWiki" },
+  { term:"Anti-Bias-Ansatz", kat:"Diskriminierung & Vielfalt",
+    kurz:"Vorurteile und Diskriminierung auf allen Ebenen bewusst bearbeiten.",
+    fachlich:"Der Anti-Bias-Ansatz ist ein vorurteilsbewusstes Bildungs- und Handlungskonzept, das Diskriminierung nicht nur auf individueller, sondern auch auf institutioneller und struktureller Ebene in den Blick nimmt. Ziel ist die aktive Auseinandersetzung mit eigenen Vor-Urteilen (bias) und Machtverhältnissen, um Ausgrenzung entgegenzuwirken.",
+    verstaendlich:"Vorurteile hat jeder Mensch — bewusst oder unbewusst. Der Anti-Bias-Ansatz lädt dazu ein, die eigenen Vorurteile ehrlich anzuschauen und gleichzeitig zu erkennen, wie Diskriminierung auch in Regeln und Einrichtungen steckt. Nur so lässt sie sich verändern.",
+    verwandt:["Diversität","Intersektionalität","Adultismus"],
+    quellen:["Wagner, P. (Hrsg.) (2017). Handbuch Inklusion. Grundlagen vorurteilsbewusster Bildung und Erziehung. Freiburg: Herder."],
+    autor:"Red. SozialWiki" },
+  { term:"Soziale Diagnostik", kat:"Methoden",
+    kurz:"Systematisch verstehen, worum es geht — als Grundlage fachlichen Handelns.",
+    fachlich:"Soziale Diagnostik umfasst methodisch geleitete Verfahren zur systematischen Erfassung und Deutung von Lebenslagen, Bedarfen und Ressourcen der Adressat:innen. Sie soll professionelle Einschätzungen nachvollziehbar und überprüfbar machen und grenzt sich bewusst von etikettierender, defizitorientierter „Diagnose“ ab, indem sie Ressourcen und Kontext einbezieht.",
+    verstaendlich:"Bevor man hilft, muss man verstehen, worum es überhaupt geht. Soziale Diagnostik ist das sorgfältige, nachvollziehbare Erfassen der Situation eines Menschen — nicht um ihn abzustempeln, sondern um passende Hilfe planen zu können.",
+    verwandt:["Hilfeplanung","Ressourcenorientierung","Case Management"],
+    quellen:["Pantuček-Eisenbacher, P. (2019). Soziale Diagnostik. Verfahren für die Praxis Sozialer Arbeit (4. Aufl.). Wien: Böhlau."],
+    autor:"Red. SozialWiki" }
+];
+
+const NEWS = [
+  { rub:"Debatte", datum:"Beispiel", titel:"Fachkräftemangel: Wie die Soziale Arbeit attraktiv bleibt", text:"Zwischen hoher Arbeitsbelastung und begrenzten Ressourcen wird diskutiert, wie Träger Fachkräfte gewinnen und halten können — von Bezahlung über Supervision bis zu multiprofessionellen Teams.", link:"Doppeltes Mandat" },
+  { rub:"Fachdiskurs", datum:"Beispiel", titel:"Ökonomisierung sozialer Dienste — Hilfe zwischen Budget und Bedarf", text:"Kennzahlen, Fallpauschalen, Wirkungsmessung: Der Beitrag ordnet ein, wie betriebswirtschaftliche Logiken das professionelle Handeln prägen — und wo die fachliche Grenze verläuft.", link:"Berufsethik" },
+  { rub:"Praxis & Digitales", datum:"Beispiel", titel:"Digitale Beratung: Nähe trotz Distanz?", text:"Video, Messenger, Online-Beratung: Wie verändert Digitalisierung die Beziehungsarbeit — und wie bleiben Angebote dabei niedrigschwellig und datensicher?", link:"Niedrigschwelligkeit" },
+  { rub:"Kinderschutz", datum:"Beispiel", titel:"Personalschlüssel im Kinderschutz erneut im Fokus", text:"Fachverbände mahnen tragfähige Rahmenbedingungen an, damit Schutzaufträge sorgfältig erfüllt werden können — mit Blick auf Fallzahlen, Zeit und fachliche Standards.", link:"Doppeltes Mandat" }
+];
+
+/* helpers */
+const slug = t => t.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const levelKeys = e => ['fachlich','verstaendlich','einfach','praxis'].filter(k => e[k]);
+const bySlug = {}; ENTRIES.forEach(e => bySlug[slug(e.term)] = e);
+const cats = [...new Set(ENTRIES.map(e => e.kat))].sort();
+
+document.getElementById('statTerms').textContent = ENTRIES.length;
+document.getElementById('statCats').textContent = cats.length;
+
+/* ---------- Home: browse ---------- */
+const grid = document.getElementById('grid');
+const resultsMeta = document.getElementById('resultsMeta');
+const qInput = document.getElementById('q');
+let state = { q:"", letter:null, kat:null };
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+const present = new Set(ENTRIES.map(e => e.term[0].toUpperCase()));
+const azBox = document.getElementById('az');
+{
+  const all = document.createElement('button'); all.textContent="Alle"; all.dataset.letter=""; all.classList.add('active'); azBox.appendChild(all);
+  alphabet.forEach(L => { const b=document.createElement('button'); b.textContent=L; b.dataset.letter=L; if(!present.has(L)) b.disabled=true; azBox.appendChild(b); });
+  azBox.addEventListener('click', e => { const b=e.target.closest('button'); if(!b||b.disabled) return; state.letter=b.dataset.letter||null; [...azBox.children].forEach(c=>c.classList.toggle('active',c===b)); renderGrid(); });
+}
+const catBox = document.getElementById('cats');
+{
+  const all=document.createElement('button'); all.textContent="Alle Kategorien"; all.dataset.kat=""; all.classList.add('active'); catBox.appendChild(all);
+  cats.forEach(k => { const b=document.createElement('button'); b.textContent=k; b.dataset.kat=k; catBox.appendChild(b); });
+  catBox.addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; state.kat=b.dataset.kat||null; [...catBox.children].forEach(c=>c.classList.toggle('active',c===b)); renderGrid(); });
+}
+document.getElementById('searchForm').addEventListener('submit', e => e.preventDefault());
+qInput.addEventListener('input', () => { state.q=qInput.value.trim().toLowerCase(); renderGrid(); });
+document.querySelectorAll('.search-hint b').forEach(b => { b.addEventListener('click', () => { qInput.value=b.textContent; state.q=b.textContent.toLowerCase(); renderGrid(); document.getElementById('lexikon').scrollIntoView(); }); });
+
+function setCat(kat){
+  state.kat = kat;
+  [...catBox.children].forEach(c => c.classList.toggle('active', c.dataset.kat === kat));
+  renderGrid();
+}
+function filtered(){
+  return ENTRIES.filter(e => {
+    if(state.letter && e.term[0].toUpperCase()!==state.letter) return false;
+    if(state.kat && e.kat!==state.kat) return false;
+    if(state.q){ const hay=(e.term+" "+e.kat+" "+e.kurz+" "+e.fachlich).toLowerCase(); if(!hay.includes(state.q)) return false; }
+    return true;
+  }).sort((a,b)=>a.term.localeCompare(b.term,'de'));
+}
+function renderGrid(){
+  const list=filtered();
+  resultsMeta.innerHTML = list.length ? `<b style="color:var(--ink-soft)">${list.length}</b> ${list.length===1?'Eintrag':'Einträge'}${state.q?` für „${qInput.value}“`:''}${state.kat?` in „${state.kat}“`:''}` : '';
+  grid.innerHTML='';
+  if(!list.length){ grid.innerHTML=`<div class="empty"><p style="font-family:var(--f-display);font-size:1.4rem;color:var(--ink-soft);margin:0 0 6px">Kein Eintrag gefunden</p><p style="margin:0">Für „${qInput.value}“ gibt es hier noch keinen Begriff — im echten Portal könntest du ihn jetzt vorschlagen.</p></div>`; return; }
+  list.forEach(e => {
+    const card=document.createElement('button'); card.className='card'; card.setAttribute('aria-label',`Eintrag ${e.term} öffnen`);
+    const badges=levelKeys(e).map(k=>`<i>${LEVELS[k]}</i>`).join('');
+    card.innerHTML=`<span class="k">${e.kat}</span><h3>${e.term}</h3><p>${e.kurz}</p><div class="levels">${badges}</div><svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    card.addEventListener('click', () => openEntry(e));
+    grid.appendChild(card);
+  });
+}
+
+/* ---------- Begriff des Tages ---------- */
+function renderBotd(){
+  const now=new Date();
+  const doy=Math.floor((now - new Date(now.getFullYear(),0,0))/86400000);
+  const e=ENTRIES[doy % ENTRIES.length];
+  document.getElementById('botd').innerHTML =
+    `<div><span class="k">✦ Begriff des Tages</span><h3>${e.term}</h3><p>${e.kurz}</p></div>
+     <a class="btn" href="#/begriff/${slug(e.term)}" data-nav>Eintrag lesen</a>`;
+}
+
+/* ---------- Register ---------- */
+const regList=document.getElementById('regList');
+const regQ=document.getElementById('regQ');
+const regCount=document.getElementById('regCount');
+function renderRegister(){
+  const q=(regQ.value||'').trim().toLowerCase();
+  const list=ENTRIES.filter(e => !q || (e.term+" "+e.kat).toLowerCase().includes(q)).sort((a,b)=>a.term.localeCompare(b.term,'de'));
+  regCount.textContent = `${list.length} von ${ENTRIES.length} Begriffen`;
+  const groups={};
+  list.forEach(e => { const L=e.term[0].toUpperCase(); (groups[L]=groups[L]||[]).push(e); });
+  regList.innerHTML = Object.keys(groups).sort().map(L => {
+    const rows=groups[L].map(e => {
+      const keys=levelKeys(e);
+      const badges=['fachlich','verstaendlich','einfach','praxis'].map(k=>`<i class="${keys.includes(k)?'':'off'}" title="${LEVELS[k]}">${LVL_SHORT[k]}</i>`).join('');
+      return `<div class="reg-row" data-slug="${slug(e.term)}"><span class="rt">${e.term}</span><span class="rc">${e.kat}</span><span class="rl">${badges}</span></div>`;
+    }).join('');
+    return `<div class="reg-group"><div class="reg-letter">${L}</div>${rows}</div>`;
+  }).join('') || `<p style="color:var(--ink-faint);padding:30px 0">Kein Begriff passt zu „${regQ.value}“.</p>`;
+  regList.querySelectorAll('.reg-row').forEach(r => r.addEventListener('click', () => openEntry(bySlug[r.dataset.slug])));
+}
+regQ.addEventListener('input', renderRegister);
+
+/* Systematik */
+const systList=document.getElementById('systList');
+systList.innerHTML = cats.map(k => {
+  const n=ENTRIES.filter(e=>e.kat===k).length;
+  return `<button data-kat="${k}"><b>${k}</b><span>${n} ${n===1?'Begriff':'Begriffe'}</span></button>`;
+}).join('');
+systList.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { setCat(b.dataset.kat); location.hash='#/'; setTimeout(()=>document.getElementById('lexikon').scrollIntoView(),60); }));
+
+/* ---------- News ---------- */
+document.getElementById('newsGrid').innerHTML = NEWS.map(n =>
+  `<article class="news"><div class="band"></div><div class="body">
+    <div class="meta"><span class="rub">${n.rub}</span><span>${n.datum}</span></div>
+    <h3>${n.titel}</h3><p>${n.text}</p>
+    <a class="more" href="#/begriff/${slug(n.link)}" data-nav>Verwandter Begriff: ${n.link} →</a>
+  </div></article>`).join('');
+
+/* ---------- Modal ---------- */
+const overlay=document.getElementById('overlay');
+const modal=document.getElementById('modal');
+let lastFocus=null, suppressHash=false;
+
+function openEntry(e){
+  if(!e) return;
+  lastFocus=document.activeElement;
+  const keys=levelKeys(e);
+  const tabs=keys.map((k,i)=>`<button data-lvl="${k}" class="${i===0?'active':''}"><span class="dot"></span>${LEVELS[k]}</button>`).join('');
+  const abruf=new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const cite=`${e.autor} (2026): ${e.term}. In: SozialWiki – Fachlexikon der Sozialen Arbeit. sozialwiki.de/lexikon/${slug(e.term)} (abgerufen am ${abruf}).`;
+  const verwandt=(e.verwandt||[]).filter(v=>bySlug[slug(v)]).map(v=>`<button data-jump="${v}">${v}</button>`).join('');
+  const quellen=(e.quellen||[]).map(q=>`<li>${q}</li>`).join('');
+  modal.innerHTML=`
+    <div class="m-head">
+      <div class="m-actions">
+        <button class="m-print" aria-label="Eintrag drucken" title="Drucken / als PDF speichern">⎙</button>
+        <button class="m-close" aria-label="Schließen" title="Schließen">×</button>
+      </div>
+      <span class="k">${e.kat}</span><h2 id="mTitle">${e.term}</h2><p class="short">${e.kurz}</p>
+    </div>
+    <div class="levelbar" role="tablist" aria-label="Lese-Ebene wählen">${tabs}</div>
+    <div class="m-body"><div id="lvlContent"></div></div>
+    <div class="m-meta">
+      ${verwandt?`<div class="m-block"><h5>Verwandte Begriffe</h5><div class="chips">${verwandt}</div></div>`:''}
+      ${quellen?`<div class="m-block"><h5>Quellen</h5><ul class="src">${quellen}</ul></div>`:''}
+      <div class="m-block"><h5>Zitiervorschlag</h5><div class="cite"><p>${cite}</p><button id="copyCite">Zitat kopieren</button></div></div>
+    </div>
+    <div class="m-author"><b>${e.autor}</b> · Beispiel-Eintrag, redaktionell noch nicht begutachtet · Prototyp 2026</div>`;
+  const content=modal.querySelector('#lvlContent');
+  const show=k => { content.innerHTML = k==='praxis'
+      ? `<div class="praxis-box"><div class="plabel">Aus der Praxis</div><p>${e.praxis}</p></div>`
+      : `<div class="leveltext ${k==='einfach'?'simple':''}">${e[k]}</div>`; };
+  show(keys[0]);
+  modal.querySelector('.levelbar').addEventListener('click', ev => { const b=ev.target.closest('button'); if(!b) return; modal.querySelectorAll('.levelbar button').forEach(x=>x.classList.toggle('active',x===b)); show(b.dataset.lvl); });
+  modal.querySelector('.m-close').addEventListener('click', closeModal);
+  modal.querySelector('.m-print').addEventListener('click', () => window.print());
+  modal.querySelector('#copyCite').addEventListener('click', ev => { navigator.clipboard?.writeText(cite).then(()=>{ ev.target.textContent='✓ Kopiert'; ev.target.classList.add('copied'); setTimeout(()=>{ ev.target.textContent='Zitat kopieren'; ev.target.classList.remove('copied'); },1800); }); });
+  modal.querySelectorAll('[data-jump]').forEach(btn => btn.addEventListener('click', () => openEntry(bySlug[slug(btn.dataset.jump)])));
+  overlay.classList.add('open'); document.body.style.overflow='hidden';
+  suppressHash=true; location.hash='#/begriff/'+slug(e.term); suppressHash=false;
+  modal.querySelector('.m-close').focus();
+}
+function closeModal(fromHash){
+  overlay.classList.remove('open'); document.body.style.overflow='';
+  if(!fromHash && location.hash.startsWith('#/begriff/')){ suppressHash=true; location.hash='#/'; suppressHash=false; }
+  lastFocus?.focus();
+}
+overlay.addEventListener('click', e => { if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape' && overlay.classList.contains('open')) closeModal(); });
+
+/* ---------- Router ---------- */
+const routes={ '/':'route-home', '/register':'route-register', '/journal':'route-journal', '/news':'route-news', '/ueber':'route-ueber' };
+let registerRendered=false;
+function router(){
+  if(suppressHash) return;
+  let hash=location.hash.replace(/^#/,'') || '/';
+  // deep link to entry
+  if(hash.startsWith('/begriff/')){
+    const s=hash.split('/')[2];
+    showRoute('/');
+    if(bySlug[s]) openEntry(bySlug[s]); else closeModal(true);
+    return;
+  }
+  if(overlay.classList.contains('open')) closeModal(true);
+  if(!routes[hash]) hash='/';
+  showRoute(hash);
+}
+function showRoute(hash){
+  Object.values(routes).forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(routes[hash]).classList.add('active');
+  document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('active', a.dataset.route===hash));
+  if(hash==='/register' && !registerRendered){ renderRegister(); registerRendered=true; }
+  window.scrollTo({top:0, behavior:'instant' in window ? 'instant':'auto'});
+}
+window.addEventListener('hashchange', router);
+
+/* ---------- Theme ---------- */
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const cur=document.documentElement.getAttribute('data-theme');
+  const isDark = cur ? cur==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', isDark?'light':'dark');
+});
+
+/* init */
+renderGrid(); renderBotd(); router();
+</script>
