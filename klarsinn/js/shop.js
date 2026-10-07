@@ -15,6 +15,8 @@
     },
     paymentLinks: { w12: "", m6: "", m12: "" },
     /* Gutscheine werden nur als Prüfsumme gespeichert. */
+    /* issuer: Name und Rolle für die Unterschriftszeile des Zertifikats (leer = nur „Programmleitung“) */
+    issuer: { name: "", role: "Programmleitung" },
     vouchers: { vrnyxh: { name: "Freischaltung per Gutschein", free: true } }
   };
 
