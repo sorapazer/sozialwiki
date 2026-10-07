@@ -2,6 +2,13 @@
 
 Ein wissenschaftlich fundiertes, interaktives Selbsthilfeprogramm als Web-App. Reines HTML/CSS/JavaScript, ohne Server, Konto oder Tracking. Öffne `index.html` im Browser oder veröffentliche den Ordner über GitHub Pages.
 
+## Akademie und Abschlusszertifikat
+
+- **Prüfungen:** 4 Phasenprüfungen (je 12 Fragen, ab 70 %) und eine Abschlussprüfung (30 Fragen, ab 80 %) aus einem Pool von über 200 Fragen; Prädikate: bestanden, gut, sehr gut, mit Auszeichnung.
+- **Fallstudien:** 12 interaktive Fälle mit je 4 Entscheidungen und fachlichem Feedback.
+- **Wiederholungstrainer:** Lernkarten im Leitner-System (Wiederholung nach 1, 2, 4, 8, 16 Tagen).
+- **Abschlusszertifikat (A4 quer):** Name, Programm, Zeitraum, Lernumfang in Unterrichtseinheiten, Prädikat, Zertifikatsnummer, Siegel; Download als PNG und Druck. Voraussetzungen: alle Grundlagen-Lektionen, Phasen- und Abschlussprüfung, 8 Fallstudien, Kompass-Plan, 75 % der Programmzeit (bei 6/12 Monaten zusätzlich Vertiefungen und Masterclasses). Name für die Unterschriftszeile in `js/shop.js` unter `issuer`.
+
 ## Programmvarianten
 
 | Variante | Dauer | Rhythmus |
@@ -62,6 +69,8 @@ js/explorables2.js    12 weitere interaktive Grafiken und Lernspiele
 js/master-*.js        36 Masterclass-Lektionen (Schema: MASTER_SCHEMA.md)
 js/models.js          interaktive Modell-Diagramme, Lektionsbibliothek
 js/shop.js            Preise, Kauf, Gutscheine, Freischaltung
+js/academy.js         Prüfungen, Wiederholungstrainer, Fallstudien, Zertifikat
+js/cases-*.js         12 Fallstudien (Schema: CASES_SCHEMA.md)
 js/tools.js           22 interaktive Werkzeuge
 js/explorables.js     12 interaktive Grafiken + Wochensymbole
 js/lessons.js         Lektions-Player, XP, Serie, Konfetti
