@@ -36,3 +36,7 @@ Eine einzige, in sich geschlossene Datei (`index.html`) – reines HTML/CSS/JS, 
 ## Lizenz
 
 Noch festzulegen (für Open-Access-Inhalte bietet sich z. B. eine Creative-Commons-Lizenz an).
+
+## Weitere Projekte im Repository
+
+- [`klarsinn/`](klarsinn/) – **Klarsinn**: interaktives, evidenzbasiertes 12-Wochen-Programm für mentale Gesundheit (Lektionen, Übungen, 22 Werkzeuge).
