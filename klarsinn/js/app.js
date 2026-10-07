@@ -8,10 +8,12 @@
   const wstate = (n) => { const w = KS.obj("weeks"); w[n] = w[n] || { t: {}, q: {}, r: {} }; return w[n]; };
 
   KS.currentWeek = function () {
-    const p = profile(); if (!p.start) return null;
-    return Math.max(1, Math.min(12, Math.floor(KS.daysBetween(p.start, KS.today()) / 7) + 1));
+    const pw = KS.currentPW(); if (!pw) return null;
+    return KS.plan()[pw - 1].m;
   };
   const boxesFor = (f) => (/täglich/.test(f) ? 7 : /(\d)×/.test(f) ? Number(f.match(/(\d)×/)[1]) : 1);
+  KS.boxesFor = boxesFor;
+  const unit = () => (KS.isLong() ? "Modul" : "Woche");
   function weekProgress(w) {
     const s = wstate(w.n); let tot = 0, got = 0;
     w.tasks.forEach((t, i) => { const n = boxesFor(t.freq); tot += n; got += (s.t[i] || []).filter(Boolean).length; });
@@ -36,6 +38,8 @@
   function viewStart() {
     const p = profile();
     if (!p.start) return landing();
+    const cpw = KS.currentPW(), ce = KS.plan()[cpw - 1];
+    if (ce && ce.kind !== "lernen") return viewStartPW(cpw, ce);
     const cur = KS.currentWeek(); const w = W.find((x) => x.n === cur) || W[0]; const s = wstate(w.n);
     const prog = weekProgress(w);
     const ci = KS.list("checkins"); const todayCI = ci.find((c) => c.d === KS.today());
@@ -46,7 +50,7 @@
     const doneTasks = Object.values(KS.obj("weeks")).reduce((a, ws) => a + Object.values(ws.t || {}).reduce((b, arr) => b + arr.filter(Boolean).length, 0), 0);
     const hr = new Date().getHours(); const hello = hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend";
     const series = [{ color: "var(--accent)", area: true, values: ci.map((c) => ({ x: c.d, y: c.mood })) }];
-    return '<div class="dash fade-in"><section class="panel now" style="--ph:' + phc(w.phase) + '"><div class="eyebrow">' + hello + (p.name ? ", " + esc(p.name) : "") + " · Tag " + (dayIdx + 1) + " von Woche " + w.n + '</div>' +
+    return '<div class="dash fade-in"><section class="panel now" style="--ph:' + phc(w.phase) + '"><div class="eyebrow">' + hello + (p.name ? ", " + esc(p.name) : "") + " · " + (KS.isLong() ? "Programmwoche " + KS.currentPW() + " von " + KS.VARIANTS[KS.variant()].weeks + " · Lernen" : "Tag " + (dayIdx + 1) + " von Woche " + w.n) + '</div>' +
       '<div class="row" style="flex-wrap:nowrap;align-items:center;gap:18px">' + KS.ring(prog, "Woche " + w.n) + '<div style="min-width:0"><span class="chip" style="color:' + phc(w.phase) + '">Phase ' + w.phase + " · " + PH[w.phase][0] + '</span><h2 style="margin-top:8px">' + esc(w.title) + '</h2><p class="muted" style="margin:6px 0 0;font-family:var(--f-read)">' + esc(w.subtitle) + "</p></div></div>" +
       lessonCTA(w) + '<div class="row"><a class="btn ghost" href="#woche-' + w.n + '">Wochenseite öffnen</a><a class="btn ghost" href="#programm">Alle Wochen</a></div>' +
       '<hr class="soft"><div class="lbl">Heute dran</div><ul class="todo">' +
@@ -57,25 +61,44 @@
       '<div class="panel stack"><div class="row" style="justify-content:space-between"><span class="lbl">Wohlbefinden (WHO-5)</span><a href="#tool-who5" style="font-size:.85rem">' + (lastWho ? "Erneut messen" : "Jetzt messen") + "</a></div>" +
       (lastWho ? '<div class="row"><b class="num" style="font-family:var(--f-display);font-size:2rem">' + lastWho.score + '</b><span class="faint">/100 am ' + KS.fmtD(lastWho.d) + '</span><span class="chip ' + KS.who5Band(lastWho.score).cls + '">' + KS.who5Band(lastWho.score).t + '</span></div><div class="gauge"><div class="track"><span class="mark" style="left:' + lastWho.score + '%"></span></div></div>' : '<p class="muted" style="margin:0">Miss dein Ausgangsniveau. So siehst du am Ende, was sich verändert hat.</p>') +
       ((cur >= 6 && who.length < 2) || (cur >= 12 && who.length < 3) ? '<div class="note">Zeit für die ' + (cur >= 12 ? "Abschluss" : "Halbzeit") + '-Messung.</div>' : "") + "</div></section></div>" +
-      '<div class="sec-h"><h2>Dein Weg</h2><a href="#programm">Programmübersicht</a></div>' + route() +
-      '<div class="sec-h"><h2>Werkzeuge dieser Woche</h2><a href="#werkzeuge">Alle 22 Werkzeuge</a></div><div class="toolgrid">' + w.tools.map(toolCard).join("") + "</div>";
+      dashBottom(w);
   }
 
+  function sidePanels() {
+    const ci = KS.list("checkins"), who = KS.list("who5"), lastWho = who[0];
+    const series = [{ color: "var(--accent)", area: true, values: ci.map((c) => ({ x: c.d, y: c.mood })) }];
+    return '<section class="stack"><div class="panel stack"><div class="row" style="justify-content:space-between"><span class="lbl">Stimmung, letzte 4 Wochen</span><a href="#tool-checkin" style="font-size:.85rem">Check-in</a></div>' + (ci.length ? KS.lineChart(series, { min: 1, max: 10, ticks: [1, 5, 10], h: 180 }) : '<div class="empty">Dein erster Check-in startet die Verlaufskurve.</div>') + "</div>" + levelCard() +
+      '<div class="panel stack"><div class="row" style="justify-content:space-between"><span class="lbl">Wohlbefinden (WHO-5)</span><a href="#tool-who5" style="font-size:.85rem">' + (lastWho ? "Erneut messen" : "Jetzt messen") + "</a></div>" + (lastWho ? '<div class="row"><b class="num" style="font-family:var(--f-display);font-size:2rem">' + lastWho.score + '</b><span class="faint">/100 am ' + KS.fmtD(lastWho.d) + '</span><span class="chip ' + KS.who5Band(lastWho.score).cls + '">' + KS.who5Band(lastWho.score).t + '</span></div><div class="gauge"><div class="track"><span class="mark" style="left:' + lastWho.score + '%"></span></div></div>' : '<p class="muted" style="margin:0">Miss dein Ausgangsniveau.</p>') + "</div></section>";
+  }
+  function dashBottom(w) {
+    return '<div class="sec-h"><h2>Dein Weg</h2><a href="#programm">Programmübersicht</a></div>' + KS.timeline() + (KS.isLong() ? "" : "") + '<div style="margin-top:14px">' + route() + "</div>" +
+      '<div class="grid2" style="margin-top:16px"><div class="panel stack"><div class="row" style="justify-content:space-between"><span class="lbl">Aktivitätskalender</span><span class="stat flame on">' + KS.flame + '<b class="num">' + KS.streak() + "</b></span></div>" + KS.heatmap(20) + '</div><div class="panel stack"><span class="lbl">Stimmung nach Wochentag</span>' + KS.weekdayBars() + "</div></div>" +
+      '<div class="sec-h"><h2>Werkzeuge für jetzt</h2><a href="#werkzeuge">Alle 22 Werkzeuge</a></div><div class="toolgrid">' + w.tools.map(toolCard).join("") + "</div>";
+  }
+  function viewStartPW(k, e) {
+    const p = profile(), c = KS.pwContent(e), s = KS.pst(k), prog = KS.pwProgress(e), w = W.find((x) => x.n === e.m), V = KS.VARIANTS[KS.variant()];
+    const dayIdx = Math.min(6, KS.daysBetween(p.start, KS.today()) % 7);
+    const daily = c.tasks.map((t, i) => [t, i]).filter(([t]) => /täglich/.test(t.freq));
+    const hr = new Date().getHours(); const hello = hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend";
+    return '<div class="dash fade-in"><section class="panel now" style="--ph:' + phc(e.phase || 4) + '"><div class="eyebrow">' + hello + (p.name ? ", " + esc(p.name) : "") + " · Programmwoche " + k + " von " + V.weeks + '</div><div class="row" style="flex-wrap:nowrap;align-items:center;gap:18px">' + KS.ring(prog, KS.KIND[e.kind]) + '<div style="min-width:0"><span class="chip" style="color:' + phc(e.phase || 4) + '">' + V.name + " · " + KS.KIND[e.kind] + '</span><h2 style="margin-top:8px">' + esc(c.title) + '</h2><p class="muted" style="margin:6px 0 0;font-family:var(--f-read)">' + esc(c.focus) + '</p></div></div><div class="row"><a class="btn chunky big" href="#pw-' + k + '">Zur Praxiswoche</a><a class="btn ghost" href="#woche-' + e.m + '">Modul ' + e.m + " ansehen</a></div>" +
+      '<hr class="soft"><div class="lbl">Heute dran</div><ul class="todo">' + (daily.length ? daily.map(([t, i]) => { const on = !!(s.t[i] || [])[dayIdx]; return '<li><button type="button" class="box' + (on ? " on" : "") + '" data-ptick="' + k + ":" + i + ":" + dayIdx + '" aria-pressed="' + on + '" aria-label="' + esc(t.title) + '">' + (on ? KS.check : "") + "</button><span><b>" + esc(t.title) + '</b><br><span class="faint" style="font-size:.86rem">' + esc(t.desc) + "</span></span></li>"; }).join("") : '<li><span class="muted">Diese Woche gibt es keine täglichen Aufgaben. Schau in die <a href="#pw-' + k + '">Wochenaufgaben</a>.</span></li>') + "</ul></section>" + sidePanels() + "</div>" + dashBottom({ tools: c.tools });
+  }
   function levelCard() {
     const x = KS.xp(), lv = KS.level(x), st = KS.streak();
     return '<div class="panel level"><div class="lv-badge num">' + lv.n + '</div><div style="min-width:0;flex:1"><div class="row" style="justify-content:space-between"><b>Level ' + lv.n + " · " + lv.name + '</b><span class="stat xpc">' + KS.bolt + '<b class="num">' + x + ' XP</b></span></div><div class="bar" style="height:10px;margin:8px 0 6px"><i style="width:' + Math.round(lv.pct * 100) + '%"></i></div><span class="faint" style="font-size:.82rem">Noch ' + lv.toNext + " XP bis Level " + (lv.n + 1) + ' · <span class="stat flame' + (st ? " on" : "") + '" style="padding:0 4px">' + KS.flame + '<b class="num">' + st + "</b></span> " + (st === 1 ? "Tag" : "Tage") + " in Folge aktiv</span></div></div>";
   }
   function landing() {
-    return '<section class="hero fade-in"><div><div class="eyebrow">Evidenzbasiertes Selbsthilfeprogramm</div><h1>Zwölf Wochen für einen <em>klaren Kopf</em> und ein ruhigeres Herz.</h1>' +
+    return '<section class="hero fade-in"><div><div class="eyebrow">Evidenzbasiertes Selbsthilfeprogramm</div><h1>Dein Programm für einen <em>klaren Kopf</em> und ein ruhigeres Herz.</h1>' +
       '<p class="lead">Klarsinn verbindet Methoden aus kognitiver Verhaltenstherapie, Akzeptanz- und Commitment-Therapie, Achtsamkeit und Positiver Psychologie zu einem strukturierten Programm. Jede Woche: verständliches Wissen mit Studienbelegen, eine angeleitete Übung, konkrete Aufgaben und interaktive Werkzeuge.</p>' +
       '<div class="row"><a class="btn" href="#los">Jetzt starten</a><a class="btn ghost" href="#woche-1">Woche 1 ansehen</a></div></div>' +
       '<div class="hero-card" id="los"><div class="eyebrow">In einer Minute startklar</div><h2 style="font-size:1.5rem;margin:6px 0 14px">Dein Start</h2><form class="stack" id="startForm">' +
       '<div class="field"><label for="st-name">Wie dürfen wir dich nennen? <span class="faint">(optional)</span></label><input type="text" id="st-name" autocomplete="given-name"></div>' +
-      '<div class="field"><label for="st-date">Startdatum</label><input type="date" id="st-date" value="' + KS.today() + '"><span class="hint">Danach richtet sich, welche Woche gerade dran ist. Du kannst jederzeit vor- und zurückblättern.</span></div>' +
+      '<div class="field"><span class="lbl">Programmlänge</span>' + KS.variantPicker("m6") + '</div><div class="field"><label for="st-date">Startdatum</label><input type="date" id="st-date" value="' + KS.today() + '"><span class="hint">Danach richtet sich, welche Woche gerade dran ist. Du kannst jederzeit vor- und zurückblättern.</span></div>' +
       '<label class="row" style="gap:8px;font-size:.88rem;align-items:flex-start;flex-wrap:nowrap"><input type="checkbox" id="st-ok" style="margin-top:4px"> <span>Ich habe verstanden, dass Klarsinn ein Selbsthilfeprogramm ist und keine Diagnose oder Psychotherapie ersetzt. In einer Krise nutze ich die <a href="#hilfe">Notfallnummern</a>.</span></label>' +
       '<button class="btn" type="submit">Programm starten</button>' + (KS.storageOk ? '<span class="faint" style="font-size:.8rem">Deine Eingaben bleiben ausschließlich in diesem Browser gespeichert.</span>' : '<span class="note warn" style="font-size:.85rem">Dein Browser blockiert gerade das lokale Speichern. Du kannst alles nutzen, Eingaben gehen aber beim Schließen verloren.</span>') + "</form></div></section>" +
-      '<div class="facts"><div><b>12</b><span>Wochen in 4 Phasen</span></div><div><b>72</b><span>Wissenskapitel</span></div><div><b>22</b><span>interaktive Werkzeuge</span></div><div><b>' + Object.keys(R).length + '</b><span>wissenschaftliche Quellen</span></div></div>' +
-      '<div class="sec-h"><h2>Der Weg durch zwölf Wochen</h2><a href="#programm">Alle Inhalte</a></div>' + route() +
+      '<div class="facts"><div><b>3</b><span>Varianten: 12 Wochen, 6 oder 12 Monate</span></div><div><b>108</b><span>Wissenskapitel</span></div><div><b>46</b><span>Werkzeuge, Grafiken und Lernspiele</span></div><div><b>' + Object.keys(R).length + '</b><span>wissenschaftliche Quellen</span></div></div>' +
+      '<div class="sec-h"><h2>Drei Wege, ein Ziel</h2><a href="#programm">Alle Inhalte</a></div><div class="variants">' + Object.entries(KS.VARIANTS).map(([k, v]) => '<div class="panel vcardx"><span class="vtag">' + v.tag + "</span><h3>" + v.name + '</h3><p class="muted">' + v.desc + '</p><div class="tl-mini" style="grid-template-columns:repeat(' + KS.plan(k).length + ',1fr)">' + KS.plan(k).map((e) => '<i style="background:' + (/integration|abschluss/.test(e.kind) ? "var(--glow)" : phc(e.phase)) + ";opacity:" + ({ lernen: 1, ueben: .7, vertiefen: .5, verankern: .35 }[e.kind] || 1) + '"></i>').join("") + '</div><span class="faint" style="font-size:.82rem">' + v.weeks + " Wochen · " + v.per + "</span></div>").join("") + "</div>" +
+      '<div class="sec-h"><h2>Zwölf Themen in vier Phasen</h2></div>' + route() +
       '<div class="sec-h"><div><div class="eyebrow">Lernen durch Ausprobieren</div><h2>Probier es direkt aus</h2></div><span class="muted">Zwei von zwölf interaktiven Grafiken</span></div><div class="demo-grid"><div data-explore="2" style="--ph:var(--p1)"></div><div data-explore="7" style="--ph:var(--p3)"></div></div>' +
       '<div class="sec-h"><h2>So funktioniert jede Woche</h2></div><div class="method">' +
       [["Lektion", "Eine interaktive Lektion, Karte für Karte: Wissen mit Studienbelegen, Grafiken zum Ausprobieren und Fragen mit sofortigem Feedback."], ["Üben", "Eine angeleitete Übung und interaktive Werkzeuge: Atem-Taktgeber, Gedankenprotokoll, Schlaftagebuch und mehr."], ["Umsetzen", "Sechs bis sieben konkrete Aufgaben für den Alltag. Du hakst ab und siehst deinen Fortschritt."], ["Reflektieren", "Reflexionsfragen und ein kurzes Quiz festigen das Gelernte. Alles bleibt in deinem Tagebuch."]].map(([t, d], i) => '<div class="panel"><span class="chip accent num">Schritt ' + (i + 1) + "</span><h3>" + t + "</h3><p>" + d + "</p></div>").join("") + "</div>" +
@@ -91,11 +114,14 @@
   /* ---------- Programmübersicht ---------- */
   function viewProgram() {
     const cur = KS.currentWeek();
-    return '<div class="sec-h" style="margin-top:6px"><div><div class="eyebrow">Programm</div><h2 style="font-size:clamp(1.9rem,4vw,2.8rem)">Zwölf Wochen, vier Phasen</h2></div></div>' +
-      '<p class="reading muted" style="margin-top:-6px">Die Wochen bauen aufeinander auf: Zuerst verstehst du Stress und beruhigst den Körper, dann stärkst du die Basis aus Schlaf, Bewegung und Aufmerksamkeit. Darauf folgen Gedanken und Gefühle, zum Schluss Selbstmitgefühl, Beziehungen und deine Werte. Plane pro Tag etwa 15 bis 25 Minuten ein.</p>' +
-      route() +
+    const V = KS.VARIANTS[KS.variant()], plan = KS.plan();
+    return '<div class="sec-h" style="margin-top:6px"><div><div class="eyebrow">Programm · ' + V.name + " · " + V.tag + '</div><h2 style="font-size:clamp(1.9rem,4vw,2.8rem)">Zwölf Themen, vier Phasen</h2></div></div>' +
+      '<p class="reading muted" style="margin-top:-6px">Die Themen bauen aufeinander auf: Zuerst verstehst du Stress und beruhigst den Körper, dann stärkst du die Basis aus Schlaf, Bewegung und Aufmerksamkeit. Darauf folgen Gedanken und Gefühle, zum Schluss Selbstmitgefühl, Beziehungen und deine Werte. Plane pro Tag etwa 15 bis 25 Minuten ein.</p>' +
+      '<div class="panel stack" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><span class="lbl">Programmlänge wählen</span><span class="faint" style="font-size:.85rem">Dein Fortschritt bleibt beim Wechsel erhalten.</span></div>' + KS.variantPicker(KS.variant()) + '<p class="muted" style="margin:0">' + V.desc + "</p></div>" +
+      KS.timeline() + '<div style="margin-top:14px">' + route() + "</div>" +
       [1, 2, 3, 4].map((p) => '<div class="sec-h"><div><div class="eyebrow" style="color:' + phc(p) + '">Phase ' + p + "</div><h2>" + PH[p][0] + '</h2></div><span class="muted">' + PH[p][1] + '</span></div><div class="weeks">' +
-        W.filter((w) => w.phase === p).map((w) => { const pr = weekProgress(w), s = wstate(w.n); return '<a class="wcard" href="#woche-' + w.n + '" style="--ph:' + phc(p) + '"><div class="top-row"><span class="wn"><span class="wicon">' + KS.weekIcon(w.n, 20) + "</span>Woche " + w.n + "</span>" + (s.done ? '<span class="chip ok">Abgeschlossen</span>' : w.n === cur ? '<span class="chip glow">Aktuelle Woche</span>' : '<span class="chip">' + esc(w.minutes || "") + "</span>") + "</div><div><h3>" + esc(w.title) + "</h3><p>" + esc(w.subtitle) + '</p></div><div class="bar"><i style="width:' + Math.round(pr * 100) + '%"></i></div></a>'; }).join("") + "</div>").join("");
+        W.filter((w) => w.phase === p).map((w) => { const pr = weekProgress(w), s = wstate(w.n); return '<a class="wcard" href="#woche-' + w.n + '" style="--ph:' + phc(p) + '"><div class="top-row"><span class="wn"><span class="wicon">' + KS.weekIcon(w.n, 20) + "</span>" + unit() + " " + w.n + "</span>" + (s.done ? '<span class="chip ok">Abgeschlossen</span>' : w.n === cur ? '<span class="chip glow">Aktuelle Woche</span>' : '<span class="chip">' + esc(w.minutes || "") + "</span>") + "</div><div><h3>" + esc(w.title) + "</h3><p>" + esc(w.subtitle) + '</p></div>' + (KS.isLong() ? '<div class="subweeks">' + plan.filter((e) => e.m === w.n && /lernen|ueben|vertiefen|verankern/.test(e.kind)).map((e) => '<span class="chip' + ((e.kind === "lernen" ? s.done : KS.pst(e.pw).done) ? " ok" : "") + '">W' + e.pw + " " + KS.KIND[e.kind] + "</span>").join("") + "</div>" : "") + '<div class="bar"><i style="width:' + Math.round(pr * 100) + '%"></i></div></a>'; }).join("") + "</div>").join("") +
+      (KS.isLong() ? '<div class="sec-h"><h2>Integrations- und Abschlusswochen</h2></div><div class="weeks">' + plan.filter((e) => /integration|abschluss/.test(e.kind)).map((e) => '<a class="wcard" href="#pw-' + e.pw + '" style="--ph:var(--glow)"><div class="top-row"><span class="wn"><span class="wicon">' + KS.weekIcon(12, 20) + "</span>Woche " + e.pw + "</span>" + (KS.pst(e.pw).done ? '<span class="chip ok">Abgeschlossen</span>' : "") + "</div><div><h3>" + esc(KS.pwContent(e).title) + "</h3><p>" + esc(KS.pwContent(e).focus) + '</p></div><div class="bar"><i style="width:' + Math.round(KS.pwProgress(e) * 100) + '%"></i></div></a>').join("") + "</div>" : "");
   }
 
   /* ---------- Wochenseite ---------- */
@@ -107,10 +133,10 @@
     const tasksDone = w.tasks.every((t, i) => (s.t[i] || []).filter(Boolean).length >= boxesFor(t.freq));
     const ticks = { aufgaben: tasksDone, quiz: Object.keys(s.q).length === w.quiz.length, reflexion: w.reflection.every((_, i) => (s.r[i] || "").trim()) };
     const prev = W.find((x) => x.n === n - 1), next = W.find((x) => x.n === n + 1);
-    return '<article style="--ph:' + phc(w.phase) + '" class="fade-in"><header class="whead"><div><div class="eyebrow" style="color:' + phc(w.phase) + '">Woche ' + n + " von 12 · Phase " + w.phase + ": " + PH[w.phase][0] + "</div><h1 style=\"margin-top:10px\">" + esc(w.title) + '</h1><div class="sub">' + esc(w.subtitle) + '</div><div class="row" style="margin-top:14px"><span class="chip">' + esc(w.minutes || "") + '</span><span class="chip">' + w.input.length + " Kapitel</span><span class=\"chip\">" + w.tasks.length + ' Aufgaben</span><span class="chip glow num">' + Math.round(weekProgress(w) * 100) + ' % erledigt</span></div>' + lessonCTA(w) + '</div><div class="bignum" aria-hidden="true">' + String(n).padStart(2, "0") + "</div></header>" +
+    return  '<article style="--ph:' + phc(w.phase) + '" class="fade-in"><header class="whead"><div><div class="eyebrow" style="color:' + phc(w.phase) + '">' + (KS.isLong() ? "Modul " + n + " von 12 · Programmwoche " + KS.pwOf(n, "lernen") + " · Lernen" : "Woche " + n + " von 12") + " · Phase " + w.phase + ": " + PH[w.phase][0] + "</div><h1 style=\"margin-top:10px\">" + esc(w.title) + '</h1><div class="sub">' + esc(w.subtitle) + '</div><div class="row" style="margin-top:14px"><span class="chip">' + esc(w.minutes || "") + '</span><span class="chip">' + w.input.length + " Kapitel</span><span class=\"chip\">" + w.tasks.length + ' Aufgaben</span><span class="chip glow num">' + Math.round(weekProgress(w) * 100) + ' % erledigt</span></div>' + lessonCTA(w) + '</div><div class="bignum" aria-hidden="true">' + String(n).padStart(2, "0") + "</div></header>" +
       '<div class="wlayout"><nav class="toc" aria-label="Abschnitte dieser Woche">' + secs.map(([id, t]) => '<a href="#w' + n + "-" + id + '" data-sec="' + id + '">' + t + (ticks[id] ? '<span class="tick">✓</span>' : "") + "</a>").join("") + "</nav><div style=\"min-width:0\">" +
       '<section class="wsec" id="w' + n + '-einstieg"><h2><small>Einstieg</small></h2><div class="reading"><p style="font-size:1.15rem">' + KS.cite(esc(w.lead)) + '</p></div><div class="lbl" style="margin-top:14px">Das nimmst du diese Woche mit</div><ul class="goals">' + w.goals.map((g) => "<li><span>" + esc(g) + "</span></li>").join("") + "</ul></section>" +
-      '<section class="wsec" id="w' + n + '-wissen"><h2><small>Wissen</small></h2>' + w.input.map((c, i) => '<div class="chapter"><h3><span>' + n + "." + (i + 1) + "</span>" + esc(c.h) + '</h3><div class="reading">' + KS.cite(c.body) + "</div>" + (c.evidence ? '<div class="evidence">' + IC_EV + "<div><b>" + esc(c.evidence.label || "Was die Forschung zeigt") + "</b>" + KS.cite(c.evidence.text) + "</div></div>" : "") + "</div>" + (i === Math.min(1, w.input.length - 1) ? '<div class="chapter" data-explore="' + n + '"></div>' : "")).join("") +
+      '<section class="wsec" id="w' + n + '-wissen"><h2><small>Wissen</small></h2>' + w.input.map((c, i) => '<div class="chapter"><h3><span>' + n + "." + (i + 1) + "</span>" + esc(c.h) + '</h3><div class="reading">' + KS.cite(c.body) + "</div>" + (c.evidence ? '<div class="evidence">' + IC_EV + "<div><b>" + esc(c.evidence.label || "Was die Forschung zeigt") + "</b>" + KS.cite(c.evidence.text) + "</div></div>" : "") + "</div>" + (i === Math.min(1, w.input.length - 1) ? '<div class="chapter" data-explore="' + n + '"></div>' : "") + (i === Math.min(3, w.input.length - 1) ? '<div class="chapter" data-explore2="' + n + '"></div>' : "")).join("") +
       (w.myth ? '<div class="lbl" style="margin-bottom:8px">Mythos und Fakt</div><div class="myth"><div><b>Verbreitete Annahme</b>' + esc(w.myth.myth) + "</div><div><b>Was stimmt</b>" + KS.cite(w.myth.fact) + "</div></div>" : "") +
       '<div class="lbl" style="margin:26px 0 10px">Das Wichtigste in Kürze</div><ol class="takeaways">' + w.takeaways.map((t) => "<li><span>" + KS.cite(esc(t)) + "</span></li>").join("") + "</ol></section>" +
       '<section class="wsec" id="w' + n + '-uebung"><h2><small>Angeleitete Übung</small></h2><div class="panel"><div class="row" style="justify-content:space-between"><h3 style="font-size:1.3rem">' + esc(w.practice.title) + '</h3><span class="chip accent">' + esc(w.practice.duration) + '</span></div><p class="muted" style="font-family:var(--f-read);max-width:var(--measure)">' + KS.cite(esc(w.practice.intro)) + '</p><ol class="steps" data-steps>' + w.practice.steps.map((st) => "<li><span>" + esc(st) + "</span></li>").join("") + '</ol><div class="row" style="margin-top:12px"><button type="button" class="btn small" data-walk>Schritt für Schritt durchgehen</button><span class="faint" style="font-size:.85rem" data-walkinfo></span></div></div></section>' +
@@ -120,7 +146,7 @@
       '<section class="wsec" id="w' + n + '-quiz"><h2><small>Wissens-Check</small></h2><div class="quiz">' + w.quiz.map((q, i) => quizItem(n, q, i, s.q[i])).join("") + "</div></section>" +
       '<section class="wsec" id="w' + n + '-quellen"><h2><small>Quellen dieser Woche</small></h2><ul class="refs">' + w.refs.slice().sort((a, b) => (R[a] ? R[a].r : a).localeCompare(R[b] ? R[b].r : b)).map((k) => (R[k] ? '<li id="ref-' + n + "-" + k + '">' + R[k].r + " " + KS.refLink(k) + "</li>" : "")).join("") + "</ul></section>" +
       '<div class="complete-box' + (s.done ? " is-done" : "") + '"><div><h3 style="font-size:1.2rem">' + (s.done ? "Woche " + n + " abgeschlossen" : "Bereit für den Abschluss?") + '</h3><p class="muted" style="margin:4px 0 0">' + (s.done ? "Abgeschlossen am " + KS.fmtDT(s.done) + ". Die Übungen bleiben dir erhalten, nutze sie weiter." : "Du musst nicht alles perfekt erledigt haben. Wichtig ist, dass du die Kernübung ausprobiert hast.") + "</p></div>" + (s.done ? '<button type="button" class="btn ghost small" data-undone>Wieder öffnen</button>' : '<button type="button" class="btn glow" data-done>Woche ' + n + " abschließen</button>") + "</div>" +
-      '<nav class="wnav">' + (prev ? '<a class="btn ghost" href="#woche-' + prev.n + '">← Woche ' + prev.n + ": " + esc(prev.title) + "</a>" : "<span></span>") + (next ? '<a class="btn ghost" href="#woche-' + next.n + '">Woche ' + next.n + ": " + esc(next.title) + " →</a>" : '<a class="btn ghost" href="#verlauf">Zum Rückblick →</a>') + "</nav></div></div></article>";
+      '<nav class="wnav">' + (prev ? '<a class="btn ghost" href="#woche-' + prev.n + '">← Woche ' + prev.n + ": " + esc(prev.title) + "</a>" : "<span></span>") + (KS.isLong() ? '<a class="btn chunky" href="#pw-' + (KS.pwOf(n, "lernen") + 1) + '">Weiter zur Übungswoche →</a>' : next ? '<a class="btn ghost" href="#woche-' + next.n + '">Woche ' + next.n + ": " + esc(next.title) + " →</a>" : '<a class="btn ghost" href="#verlauf">Zum Rückblick →</a>') + "</nav></div></div></article>";
   }
   function quizItem(n, q, i, ans) {
     const answered = ans !== undefined;
@@ -131,6 +157,7 @@
     const w = W.find((x) => x.n === n); if (!w) return; const s = wstate(n);
     app.querySelectorAll("[data-tool]").forEach((el) => mountTool(el, el.dataset.tool));
     app.querySelectorAll("[data-explore]").forEach((el) => KS.mountExplorable(el, Number(el.dataset.explore)));
+    app.querySelectorAll("[data-explore2]").forEach((el) => KS.mountExplorable2(el, Number(el.dataset.explore2)));
     app.querySelectorAll("[data-refl]").forEach((ta) => { let t; ta.oninput = () => { clearTimeout(t); t = setTimeout(() => { s.r[ta.dataset.refl] = ta.value; KS.save(); }, 400); }; ta.onblur = () => { s.r[ta.dataset.refl] = ta.value; KS.save(); }; });
     app.querySelectorAll("[data-ans]").forEach((b) => (b.onclick = () => { const [, i, k] = b.dataset.ans.split(":").map(Number); s.q[i] = k; KS.save(); const q = w.quiz[i]; const box = b.closest(".q"); box.outerHTML = quizItem(n, q, i, k); bindWeek.quizRebind(n); }));
     const d = app.querySelector("[data-done]"); if (d) d.onclick = () => { s.done = new Date().toISOString(); KS.save(); KS.toast("Woche " + n + " abgeschlossen. Stark."); render(); window.scrollTo({ top: 0 }); };
@@ -160,7 +187,8 @@
     const chip = app.querySelector(".whead .chip.glow"); if (chip) chip.textContent = Math.round(weekProgress(w) * 100) + " % erledigt";
   });
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) location.hash = b.dataset.go; });
-  document.addEventListener("click", (e) => { const b = e.target.closest("[data-lesson]"); if (b) { e.preventDefault(); KS.openLesson(Number(b.dataset.lesson), b.dataset.restart ? 0 : undefined); } });
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-lesson]"); if (b) { e.preventDefault(); KS.openLesson(Number(b.dataset.lesson), b.dataset.restart ? 0 : undefined, b.dataset.mode); } });
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-variant]"); if (!b) return; const g = b.closest(".vpick"); g.querySelectorAll(".vopt").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); }); if (profile().start) { profile().variant = b.dataset.variant; KS.save(); KS.toast("Programm: " + KS.VARIANTS[b.dataset.variant].name); render(); } });
   function lessonCTA(w) {
     const L = KS.obj("lessons")[w.n] || {}; const total = KS.buildCards(w).length; const pos = L.pos || 0;
     const label = L.done ? "Lektion wiederholen" : pos > 0 ? "Lektion fortsetzen" : "Lektion starten";
@@ -201,10 +229,12 @@
     const first = who[0], last = who[who.length - 1];
     const refl = W.map((w) => { const s = wstate(w.n); const items = w.reflection.map((q, i) => [q, s.r[i]]).filter(([, a]) => a && a.trim()); return items.length ? '<details class="panel"><summary><b>Woche ' + w.n + ": " + esc(w.title) + '</b> <span class="faint">· ' + items.length + " Antworten</span></summary>" + items.map(([q, a]) => '<div style="margin-top:12px"><div class="lbl">' + esc(q) + '</div><div style="font-family:var(--f-read)">' + KS.nl2br(a) + "</div></div>").join("") + "</details>" : ""; }).join("");
     return '<div class="sec-h" style="margin-top:6px"><div><div class="eyebrow">Mein Verlauf</div><h2 style="font-size:clamp(1.9rem,4vw,2.8rem)">Was sich bewegt</h2></div><a class="btn ghost small" href="#daten">Daten sichern</a></div>' +
-      '<div class="facts" style="margin-top:0"><div><b>' + weeksDone + '/12</b><span>Wochen abgeschlossen</span></div><div><b>' + ci.length + '</b><span>Check-ins</span></div><div><b>' + Math.round(prac.reduce((a, p) => a + p.minutes, 0)) + '</b><span>Minuten Atmung, PMR, Meditation</span></div><div><b>' + (avgSE !== null ? avgSE + " %" : "–") + "</b><span>Ø Schlafeffizienz</span></div></div>" +
+      '<div class="facts" style="margin-top:0"><div><b>' + weeksDone + '/12</b><span>Themen abgeschlossen</span></div><div><b>' + ci.length + '</b><span>Check-ins</span></div><div><b>' + Math.round(prac.reduce((a, p) => a + p.minutes, 0)) + '</b><span>Minuten Atmung, PMR, Meditation</span></div><div><b>' + (avgSE !== null ? avgSE + " %" : "–") + "</b><span>Ø Schlafeffizienz</span></div></div>" +
       '<div class="grid2"><div class="panel stack"><span class="lbl">Wohlbefinden (WHO-5) über das Programm</span>' + whoChart + (who.length >= 2 ? '<div class="note' + (last.score - first.score >= 10 ? "" : " warn") + '">Veränderung seit der ersten Messung: <b class="num">' + (last.score - first.score > 0 ? "+" : "") + (last.score - first.score) + " Punkte</b>. " + (last.score - first.score >= 10 ? "Das ist eine bedeutsame Verbesserung." : last.score - first.score <= -10 ? "Dein Wohlbefinden ist gesunken. Bitte sprich mit einer Fachperson darüber." : "Noch keine bedeutsame Veränderung (ab 10 Punkten). Veränderung braucht oft Zeit.") + "</div>" : "") + "</div>" +
       '<div class="panel stack"><span class="lbl">Stimmung, Energie und Stress (8 Wochen)</span>' + (ci.length ? KS.lineChart([{ color: "var(--accent)", area: true, values: ci.map((c) => ({ x: c.d, y: c.mood })) }, { color: "var(--glow)", values: ci.filter((c) => c.energy).map((c) => ({ x: c.d, y: c.energy })) }, { color: "var(--crit)", dash: true, values: ci.filter((c) => c.stress).map((c) => ({ x: c.d, y: c.stress })) }], { days: 56, min: 1, max: 10, ticks: [1, 4, 7, 10], h: 200 }) : '<div class="empty">Noch keine Check-ins.</div>') + "</div></div>" +
-      '<div class="sec-h"><h2>Wochenfortschritt</h2></div><div class="panel stack">' + W.map((w) => { const p = weekProgress(w); return '<div class="row" style="flex-wrap:nowrap;gap:12px"><a href="#woche-' + w.n + '" style="width:min(220px,42%);font-size:.9rem;text-decoration:none;color:var(--ink)"><b class="num">' + w.n + ".</b> " + esc(w.title) + '</a><div class="bar" style="flex:1"><i style="width:' + Math.round(p * 100) + "%;background:" + phc(w.phase) + '"></i></div><span class="num faint" style="width:44px;text-align:right;font-size:.85rem">' + Math.round(p * 100) + " %</span></div>"; }).join("") + "</div>" +
+      '<div class="grid2" style="margin-top:16px"><div class="panel stack"><span class="lbl">Aktivitätskalender (26 Wochen)</span>' + KS.heatmap(26) + '</div><div class="panel stack"><span class="lbl">Stimmung nach Wochentag</span>' + KS.weekdayBars() + '</div></div><div class="grid2" style="margin-top:16px"><div class="panel stack"><span class="lbl">Was du am meisten nutzt</span>' + KS.usageBars() + '</div><div data-explore2="12"></div></div>' +
+      '<div class="sec-h"><h2>Programmverlauf</h2></div>' + KS.timeline() +
+      '<div class="sec-h"><h2>Fortschritt je Thema</h2></div><div class="panel stack">' + W.map((w) => { const p = weekProgress(w); return '<div class="row" style="flex-wrap:nowrap;gap:12px"><a href="#woche-' + w.n + '" style="width:min(220px,42%);font-size:.9rem;text-decoration:none;color:var(--ink)"><b class="num">' + w.n + ".</b> " + esc(w.title) + '</a><div class="bar" style="flex:1"><i style="width:' + Math.round(p * 100) + "%;background:" + phc(w.phase) + '"></i></div><span class="num faint" style="width:44px;text-align:right;font-size:.85rem">' + Math.round(p * 100) + " %</span></div>"; }).join("") + "</div>" +
       '<div class="sec-h"><h2>Meine Reflexionen</h2></div><div class="stack">' + (refl || '<div class="empty">Deine Antworten auf die Reflexionsfragen erscheinen hier, Woche für Woche.</div>') + "</div>";
   }
 
@@ -283,16 +313,17 @@
     if (h === "start" || h === "") { html = viewStart(); after = profile().start ? () => app.querySelectorAll("[data-tool]").forEach((el) => mountTool(el, el.dataset.tool)) : bindLanding; }
     else if (h === "programm") html = viewProgram();
     else if ((m = h.match(/^woche-(\d+)$/))) { html = viewWeek(Number(m[1])); after = () => bindWeek(Number(m[1])); }
+    else if ((m = h.match(/^pw-(\d+)$/))) { const k = Number(m[1]), e = KS.plan()[k - 1]; if (e && e.kind === "lernen") { html = viewWeek(e.m); after = () => bindWeek(e.m); } else { html = KS.viewPW(k) || notFound(); after = () => KS.bindPW(k, mountTool); } }
     else if (h === "werkzeuge") html = viewTools();
     else if ((m = h.match(/^tool-([a-z0-9]+)$/))) { html = viewTool(m[1]); after = () => app.querySelectorAll("[data-tool]").forEach((el) => mountTool(el, el.dataset.tool)); }
-    else if (h === "verlauf") html = viewProgress();
+    else if (h === "verlauf") { html = viewProgress(); after = () => app.querySelectorAll("[data-explore2]").forEach((el) => KS.mountExplorable2(el, Number(el.dataset.explore2))); }
     else if (h === "quellen") { html = viewSources(); after = () => { const q = app.querySelector("#srcq"); q.oninput = () => { const v = q.value.toLowerCase().trim(); app.querySelectorAll("#srclist li").forEach((li) => (li.hidden = v && !li.dataset.s.includes(v))); app.querySelectorAll(".src-group").forEach((g) => (g.hidden = !g.querySelector("li:not([hidden])"))); }; }; }
     else if (h === "hilfe") html = viewHelp();
     else if (h === "daten") { html = viewData(); after = bindData; }
     else html = notFound();
     app.innerHTML = html; if (after) after();
     const top = h.split("-")[0];
-    const map = { start: "start", programm: "programm", woche: "programm", werkzeuge: "werkzeuge", tool: "werkzeuge", verlauf: "verlauf", quellen: "quellen" };
+    const map = { start: "start", programm: "programm", woche: "programm", pw: "programm", werkzeuge: "werkzeuge", tool: "werkzeuge", verlauf: "verlauf", quellen: "quellen" };
     document.querySelectorAll(".nav a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.r === map[top]) || a.setAttribute("aria-current", "page"));
     document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.r === map[top]) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     document.getElementById("nav").classList.remove("open");
@@ -306,7 +337,7 @@
     f.onsubmit = (e) => {
       e.preventDefault();
       if (!document.getElementById("st-ok").checked) { KS.toast("Bitte bestätige den Hinweis"); return; }
-      const p = profile(); p.name = document.getElementById("st-name").value.trim(); p.start = document.getElementById("st-date").value || KS.today(); KS.save();
+      const p = profile(); p.name = document.getElementById("st-name").value.trim(); const vb = f.querySelector(".vopt.on"); p.variant = vb ? vb.dataset.variant : "w12"; p.start = document.getElementById("st-date").value || KS.today(); KS.save();
       KS.toast("Willkommen bei Klarsinn"); location.hash = "#woche-1";
     };
   }

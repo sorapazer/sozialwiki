@@ -4,7 +4,7 @@
 
   /* ---------- Aktivität, Serie, XP ---------- */
   const _save = KS.save;
-  KS.save = function () { const d = KS.obj("days"); d[KS.today()] = 1; _save(); KS.refreshStats && KS.refreshStats(); };
+  KS.save = function () { const d = KS.obj("days"); d[KS.today()] = Math.min(99, (d[KS.today()] || 0) + 1); _save(); KS.refreshStats && KS.refreshStats(); };
   KS.streak = function () {
     const d = KS.obj("days"); let n = 0; const t = new Date();
     if (!d[KS.dkey(t)]) t.setDate(t.getDate() - 1);
@@ -23,6 +23,9 @@
       }
       if (ls[w.n] && ls[w.n].done) xp += 50;
     });
+    Object.values(KS.obj("pweeks")).forEach((s) => { Object.values(s.t || {}).forEach((a) => (xp += a.filter(Boolean).length * 10)); Object.values(s.r || {}).forEach((r) => r && r.trim() && (xp += 15)); if (s.done) xp += 60; });
+    Object.entries(KS.obj("deepq")).forEach(([n, s]) => { const d = (window.KS_DEEP || []).find((x) => String(x.n) === n); Object.entries(s.q || {}).forEach(([i, k]) => (xp += d && d.quiz2[i] && d.quiz2[i].correct === k ? 20 : 5)); });
+    Object.keys(KS.obj("lessons")).forEach((k) => { if (/d$/.test(k) && KS.obj("lessons")[k].done) xp += 50; });
     ["checkins", "practice", "thoughts", "gratitude", "sleep", "activities", "emotions", "letters", "worries", "who5", "writing", "imessages", "ifthen", "stressors", "grounding", "defusion", "problems", "people"].forEach((k) => (xp += KS.list(k).length * 10));
     return xp;
   };
@@ -56,43 +59,55 @@
     if (cur) cards.push(cur);
     return cards;
   }
-  KS.buildCards = function (w) {
+  KS.deepSource = function (n) {
+    const w = (window.KS_WEEKS || []).find((x) => x.n === n), d = (window.KS_DEEP || []).find((x) => x.n === n);
+    if (!w || !d) return null;
+    return { n, phase: w.phase, deep: true, title: "Vertiefung: " + w.title, subtitle: "Neue Perspektiven, mehr Forschung, weitere Übungen", lead: (d.ueben && d.ueben.focus) || "", input: d.deep, quiz: d.quiz2, myth: null, takeaways: null, practice: d.practices[0] };
+  };
+  KS.buildCards = function (w, mode) {
+    const deep = mode === "deep" || w.deep;
     const C = [{ type: "intro" }];
-    const quizAfter = { 1: 0, 2: 1, 4: 2, 5: 3 };
-    const xpAfter = Math.min(1, w.input.length - 1);
+    const quizAfter = deep ? { 0: 0, 1: 1, 2: 2 } : { 1: 0, 2: 1, 4: 2, 5: 3 };
+    const xpAfter = deep ? 0 : Math.min(1, w.input.length - 1);
+    const xp2After = deep ? -1 : Math.min(3, w.input.length - 1);
     w.input.forEach((ch, i) => {
       splitBody(ch.body).forEach((b, j, arr) => C.push({ type: "text", ch: i, h: ch.h, html: b, first: j === 0, part: arr.length > 1 ? (j + 1) + "/" + arr.length : "" }));
       if (ch.evidence) C.push({ type: "evidence", ch: i, ev: ch.evidence });
-      if (i === xpAfter && KS.explorables[w.n]) C.push({ type: "explore" });
+      if (i === xpAfter && (deep ? KS.explorables2 : KS.explorables)[w.n]) C.push({ type: deep ? "explore2" : "explore" });
+      if (i === xp2After && KS.explorables2 && KS.explorables2[w.n]) C.push({ type: "explore2" });
       if (quizAfter[i] !== undefined && w.quiz[quizAfter[i]]) C.push({ type: "quiz", qi: quizAfter[i] });
     });
+    if (deep && w.quiz[3]) C.push({ type: "quiz", qi: 3 });
     if (w.myth) C.push({ type: "myth" });
-    C.push({ type: "takeaways" });
-    C.push({ type: "practice" });
+    if (w.takeaways) C.push({ type: "takeaways" });
+    if (w.practice) C.push({ type: "practice" });
     C.push({ type: "finish" });
     return C;
   };
 
   /* ---------- Player ---------- */
   let ov = null;
-  KS.openLesson = function (n, startAt) {
-    const w = (window.KS_WEEKS || []).find((x) => x.n === n); if (!w) return;
-    const L = KS.obj("lessons"); L[n] = L[n] || { pos: 0 };
-    const S = KS.obj("weeks"); S[n] = S[n] || { t: {}, q: {}, r: {} }; const ws = S[n];
-    const cards = KS.buildCards(w);
-    let pos = typeof startAt === "number" ? startAt : (L[n].done ? 0 : Math.min(L[n].pos || 0, cards.length - 1));
+  KS.openLesson = function (n0, startAt, mode) {
+    const deep = mode === "deep";
+    const w = deep ? KS.deepSource(n0) : (window.KS_WEEKS || []).find((x) => x.n === n0); if (!w) return;
+    const n = n0, LK = deep ? n + "d" : n;
+    const Lall = KS.obj("lessons"); Lall[LK] = Lall[LK] || { pos: 0 };
+    let ws;
+    if (deep) { const S = KS.obj("deepq"); S[n] = S[n] || { q: {} }; ws = S[n]; } else { const S = KS.obj("weeks"); S[n] = S[n] || { t: {}, q: {}, r: {} }; ws = S[n]; }
+    const cards = KS.buildCards(w, mode);
+    let pos = typeof startAt === "number" ? startAt : (Lall[LK].done ? 0 : Math.min(Lall[LK].pos || 0, cards.length - 1));
     let xpGain = 0; const startXP = KS.xp();
     ov = document.createElement("div"); ov.className = "lesson"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Lektion Woche " + n);
     ov.style.setProperty("--ph", "var(--p" + w.phase + ")");
     ov.innerHTML = '<div class="ls-top"><button type="button" class="iconbtn" data-x aria-label="Lektion schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="ls-bar"><i data-bar></i></div><span class="ls-count num" data-count></span></div><div class="ls-stage"><div class="ls-card" data-card></div></div><div class="ls-foot"><button type="button" class="btn ghost" data-back>Zurück</button><button type="button" class="btn chunky" data-next>Weiter</button></div>';
     document.body.appendChild(ov); document.documentElement.classList.add("noscroll");
     const card = ov.querySelector("[data-card]"), next = ov.querySelector("[data-next]"), back = ov.querySelector("[data-back]");
-    const close = () => { L[n].pos = pos; KS.save(); ov.remove(); ov = null; document.documentElement.classList.remove("noscroll"); removeEventListener("keydown", key); if (KS.rerender) KS.rerender(); };
+    const close = () => { Lall[LK].pos = pos; KS.save(); ov.remove(); ov = null; document.documentElement.classList.remove("noscroll"); removeEventListener("keydown", key); if (KS.rerender) KS.rerender(); };
     const key = (e) => { if (e.key === "Escape") close(); else if (e.key === "ArrowRight" && !next.disabled && !/TEXTAREA|INPUT/.test(document.activeElement.tagName)) next.click(); else if (e.key === "ArrowLeft" && !/TEXTAREA|INPUT/.test(document.activeElement.tagName)) back.click(); };
     addEventListener("keydown", key);
     ov.querySelector("[data-x]").onclick = close;
     back.onclick = () => { if (pos > 0) { pos--; show(-1); } };
-    next.onclick = () => { if (pos < cards.length - 1) { pos++; L[n].pos = pos; KS.save(); show(1); } else close(); };
+    next.onclick = () => { if (pos < cards.length - 1) { pos++; Lall[LK].pos = pos; KS.save(); show(1); } else close(); };
 
     function show(dir) {
       const c = cards[pos];
@@ -108,21 +123,22 @@
     function render(c) {
       const chap = (c.ch !== undefined) ? '<div class="ls-eyebrow">Kapitel ' + n + "." + (c.ch + 1) + " · " + esc(w.input[c.ch].h) + (c.part ? ' <span class="faint">' + c.part + "</span>" : "") + "</div>" : "";
       switch (c.type) {
-        case "intro": return '<div class="ls-intro"><div class="ls-icon">' + KS.weekIcon(n, 44) + '</div><div class="ls-eyebrow">Woche ' + n + " · Lektion</div><h2>" + esc(w.title) + '</h2><p class="ls-lead">' + esc(w.subtitle) + '</p><div class="ls-meta"><span>' + cards.length + " Karten</span><span>ca. " + Math.max(8, Math.round(cards.length * 0.6)) + " Min.</span><span>" + w.quiz.length + " Fragen</span></div><div class=\"reading ls-text\">" + KS.cite(esc(w.lead)) + "</div></div>";
+        case "intro": return '<div class="ls-intro"><div class="ls-icon">' + KS.weekIcon(n, 44) + '</div><div class="ls-eyebrow">' + (deep ? "Modul " + n + " · Vertiefungs-Lektion" : (KS.isLong && KS.isLong() ? "Modul " : "Woche ") + n + " · Lektion") + "</div><h2>" + esc(w.title) + '</h2><p class="ls-lead">' + esc(w.subtitle) + '</p><div class="ls-meta"><span>' + cards.length + " Karten</span><span>ca. " + Math.max(8, Math.round(cards.length * 0.6)) + " Min.</span><span>" + w.quiz.length + " Fragen</span></div>" + (w.lead ? "<div class=\"reading ls-text\">" + KS.cite(esc(w.lead)) + "</div>" : "") + "</div>";
         case "text": return chap + (c.first ? "<h2>" + esc(c.h) + "</h2>" : "") + '<div class="reading ls-text">' + KS.cite(c.html) + "</div>";
         case "evidence": return chap + '<div class="ls-ev"><div class="ls-ev-icon"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 14h9"/></svg></div><div class="ls-eyebrow">' + esc(c.ev.label || "Was die Forschung zeigt") + '</div><div class="ls-text reading">' + KS.cite(c.ev.text) + "</div></div>";
-        case "explore": return '<div data-xp></div>';
+        case "explore": case "explore2": return '<div data-xp></div>';
         case "quiz": { const q = w.quiz[c.qi]; const a = ws.q[c.qi]; return '<div class="ls-eyebrow">Kurz geprüft · Frage ' + (c.qi + 1) + " von " + w.quiz.length + "</div><h2>" + esc(q.q) + '</h2><div class="ls-opts">' + q.options.map((o, k) => '<button type="button" class="ls-opt' + (a !== undefined ? (k === q.correct ? " right" : k === a ? " wrong" : "") : "") + '" data-k="' + k + '"' + (a !== undefined ? " disabled" : "") + '><span class="ls-key">' + "ABCD"[k] + "</span><span>" + esc(o) + "</span></button>").join("") + '</div><div data-fb>' + (a !== undefined ? fb(q, a) : "") + "</div>"; }
         case "myth": return '<div class="ls-eyebrow">Mythos oder Fakt?</div><h2>„' + esc(w.myth.myth.replace(/^„|“$/g, "")) + '“</h2><p class="muted">Was meinst du: Stimmt das?</p><div class="row" data-mb><button type="button" class="btn chunky alt" data-m="1">Stimmt</button><button type="button" class="btn chunky" data-m="0">Stimmt nicht</button></div><div data-mf></div>';
         case "takeaways": return '<div class="ls-eyebrow">Das Wichtigste in Kürze</div><h2>Fünf Dinge, die du mitnimmst</h2><ol class="ls-take">' + w.takeaways.map((t, i) => '<li style="animation-delay:' + (i * 0.25) + 's">' + KS.cite(esc(t)) + "</li>").join("") + "</ol>";
         case "practice": return '<div class="ls-eyebrow">Jetzt ausprobieren · ' + esc(w.practice.duration) + "</div><h2>" + esc(w.practice.title) + '</h2><p class="ls-text reading">' + KS.cite(esc(w.practice.intro)) + '</p><ol class="steps">' + w.practice.steps.map((s) => "<li><span>" + esc(s) + "</span></li>").join("") + "</ol>";
-        case "finish": { const lv = KS.level(KS.xp()); return '<div class="ls-finish"><div class="ls-trophy">' + KS.weekIcon(n, 54) + '</div><div class="ls-eyebrow">Lektion abgeschlossen</div><h2>Stark gemacht.</h2><p class="ls-lead">Du hast das Wissen von Woche ' + n + ' durchgearbeitet. Jetzt geht es um die Umsetzung im Alltag.</p><div class="ls-meta big"><span>' + KS.bolt + ' <b class="num">+' + Math.max(50, KS.xp() - startXP + xpGain) + '</b> XP</span><span>' + KS.flame + ' <b class="num">' + KS.streak() + '</b> Tage Serie</span><span>Level <b class="num">' + lv.n + "</b> · " + lv.name + '</span></div><div class="bar" style="height:10px;max-width:360px;margin:6px auto 0"><i style="width:' + Math.round(lv.pct * 100) + '%"></i></div><p class="faint" style="font-size:.85rem">Noch ' + lv.toNext + ' XP bis Level ' + (lv.n + 1) + '</p><div class="row" style="justify-content:center"><a class="btn chunky" href="#w' + n + '-aufgaben" data-close>Zu den Aufgaben</a><a class="btn ghost" href="#w' + n + '-werkzeuge" data-close>Zu den Werkzeugen</a></div></div>'; }
+        case "finish": { const lv = KS.level(KS.xp()); return '<div class="ls-finish"><div class="ls-trophy">' + KS.weekIcon(n, 54) + '</div><div class="ls-eyebrow">Lektion abgeschlossen</div><h2>Stark gemacht.</h2><p class="ls-lead">' + (deep ? "Du hast die Vertiefung von Modul " + n + " abgeschlossen." : "Du hast das Wissen von " + (KS.isLong && KS.isLong() ? "Modul " : "Woche ") + n + " durchgearbeitet.") + ' Jetzt geht es um die Umsetzung im Alltag.</p><div class="ls-meta big"><span>' + KS.bolt + ' <b class="num">+' + Math.max(50, KS.xp() - startXP + xpGain) + '</b> XP</span><span>' + KS.flame + ' <b class="num">' + KS.streak() + '</b> Tage Serie</span><span>Level <b class="num">' + lv.n + "</b> · " + lv.name + '</span></div><div class="bar" style="height:10px;max-width:360px;margin:6px auto 0"><i style="width:' + Math.round(lv.pct * 100) + '%"></i></div><p class="faint" style="font-size:.85rem">Noch ' + lv.toNext + ' XP bis Level ' + (lv.n + 1) + '</p><div class="row" style="justify-content:center">' + (deep ? '<a class="btn chunky" href="#pw-' + (KS.pwOf(n, KS.variant() === "m12" ? "vertiefen" : "ueben") || 1) + '" data-close>Zur Praxiswoche</a>' : '<a class="btn chunky" href="#w' + n + '-aufgaben" data-close>Zu den Aufgaben</a><a class="btn ghost" href="#w' + n + '-werkzeuge" data-close>Zu den Werkzeugen</a>') + '</div></div>'; }
       }
       return "";
     }
     function fb(q, a) { return '<div class="ls-fb ' + (a === q.correct ? "ok" : "no") + '"><b>' + (a === q.correct ? "Richtig!" : "Nicht ganz.") + "</b> " + KS.cite(esc(q.explain)) + "</div>"; }
     function bind(c) {
       if (c.type === "explore") KS.mountExplorable(card.querySelector("[data-xp]"), n);
+      if (c.type === "explore2") KS.mountExplorable2(card.querySelector("[data-xp]"), n);
       if (c.type === "quiz" && ws.q[c.qi] === undefined) {
         next.disabled = true; next.textContent = "Wähle eine Antwort";
         card.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => {
@@ -141,9 +157,9 @@
         }));
       }
       if (c.type === "finish") {
-        const L2 = KS.obj("lessons"); if (!L2[n].done) { L2[n].done = new Date().toISOString(); KS.save(); KS.confetti(); KS.bell(); }
+        if (!Lall[LK].done) { Lall[LK].done = new Date().toISOString(); KS.save(); KS.confetti(); KS.bell(); }
         next.textContent = "Schließen";
-        card.querySelectorAll("[data-close]").forEach((a) => a.addEventListener("click", () => { L[n].pos = 0; KS.save(); ov.remove(); ov = null; document.documentElement.classList.remove("noscroll"); removeEventListener("keydown", key); }));
+        card.querySelectorAll("[data-close]").forEach((a) => a.addEventListener("click", () => { Lall[LK].pos = 0; KS.save(); ov.remove(); ov = null; document.documentElement.classList.remove("noscroll"); removeEventListener("keydown", key); }));
       }
     }
     show(1);
