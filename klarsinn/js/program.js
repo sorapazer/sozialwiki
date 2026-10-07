@@ -73,6 +73,11 @@
       (c.deep && c.d && c.d.deep ? '<div class="lesson-cta"><button type="button" class="btn chunky big" data-lesson="' + e.m + '" data-mode="deep">' + ((KS.obj("lessons")[e.m + "d"] || {}).done ? "Vertiefungs-Lektion wiederholen" : "Vertiefungs-Lektion starten") + '</button><span class="faint" style="font-size:.85rem">' + KS.buildCards(KS.deepSource(e.m), "deep").length + " interaktive Karten</span></div>" : "") +
       '</div><div class="pw-tile">' + KS.weekIcon(e.m, 64) + "<b>" + KS.KIND[e.kind] + "</b></div></header>";
     h += '<div class="pw-body">';
+    if (!c.review && KS.lessonsOf) {
+      const all = KS.lessonsOf(e.m).filter((l) => l.mode === "master");
+      const pick = KS.variant() === "m6" ? all : all.filter((l) => l.key.endsWith({ ueben: "a", vertiefen: "b", verankern: "c" }[e.kind]));
+      if (pick.length) h += '<section class="wsec"><h2><small>Masterclass dieser Woche</small></h2><div class="lib-row">' + pick.map((l) => KS.lessonTile(e.m, l, false)).join("") + "</div></section>";
+    }
     if (c.review) {
       const mods = W().filter((w) => !e.phase || w.phase === e.phase);
       h += '<section class="wsec"><h2><small>Rückblick</small></h2><div class="weeks">' + mods.map((w) => { const p = KS.weekProgress(w); return '<a class="wcard" href="#woche-' + w.n + '" style="--ph:' + phc(w.phase) + '"><div class="top-row"><span class="wn"><span class="wicon">' + KS.weekIcon(w.n, 20) + "</span>Modul " + w.n + "</span>" + ((KS.obj("weeks")[w.n] || {}).done ? '<span class="chip ok">Abgeschlossen</span>' : "") + "</div><div><h3>" + esc(w.title) + "</h3><p>" + esc(w.takeaways[0]) + '</p></div><div class="bar"><i style="width:' + Math.round(p * 100) + '%"></i></div></a>'; }).join("") + "</div></section>";

@@ -12,6 +12,20 @@ Ein wissenschaftlich fundiertes, interaktives Selbsthilfeprogramm als Web-App. R
 
 Die Variante wird beim Start gewählt und kann unter „Programm“ jederzeit gewechselt werden.
 
+## Preise und Freischaltung
+
+| Variante | Preis | ≈ pro Woche |
+|---|---|---|
+| 12 Wochen (Kompakt) | 1.000 € einmalig | 83 € |
+| 6 Monate (Vertiefung) | 6 × 150 € = 900 € | 35 € |
+| 12 Monate (Begleitung) | 12 × 70 € = 840 € | 16 € |
+
+Preise, Bezahl-Links und Gutscheine stehen oben in `js/shop.js` (`KS.SHOP`). Solange kein Bezahl-Link eingetragen ist, zeigt die Kaufseite einen Hinweis statt einer Zahlung. Gutscheine werden nur als Prüfsumme gespeichert; der Gutschein `JESUS` schaltet das Programm kostenlos frei.
+
+Kostenlos ohne Zugang: Startseite mit interaktiven Beispielen, Programmübersicht, Lektionsbibliothek (Vorschau), Modul 1 inklusive Probelektion, Quellen, Hilfe.
+
+**Wichtig:** Die Freischaltung läuft vollständig im Browser. Wer sich mit Entwicklerwerkzeugen auskennt, kann sie umgehen. Für einen echten Bezahlschutz braucht es einen Server mit Konten (z. B. ein Kursplattform-Anbieter oder Stripe + eigenes Backend). Vor dem Verkauf außerdem nötig: Impressum, AGB, Widerrufsbelehrung für digitale Inhalte, Datenschutzerklärung und eine Prüfung der Werbeaussagen (Heilmittelwerbegesetz).
+
 ## Inhalt
 
 | Phase | Wochen |
@@ -45,6 +59,9 @@ js/weeks-*.js         Inhalte der 12 Lernmodule (Schema: CONTENT_SCHEMA.md)
 js/deep-*.js          Vertiefungspakete für 6/12 Monate (Schema: DEEP_SCHEMA.md)
 js/program.js         Varianten, Praxiswochen, Zeitachse, Aktivitätskalender
 js/explorables2.js    12 weitere interaktive Grafiken und Lernspiele
+js/master-*.js        36 Masterclass-Lektionen (Schema: MASTER_SCHEMA.md)
+js/models.js          interaktive Modell-Diagramme, Lektionsbibliothek
+js/shop.js            Preise, Kauf, Gutscheine, Freischaltung
 js/tools.js           22 interaktive Werkzeuge
 js/explorables.js     12 interaktive Grafiken + Wochensymbole
 js/lessons.js         Lektions-Player, XP, Serie, Konfetti
