@@ -653,3 +653,5 @@ html.noscroll, html.noscroll body { overflow: hidden; }
 .hero-card .price .vtag, .hero-card .price .price-name, .hero-card .price .price-sub { grid-column: 1; }
 .hero-card .price .price-amt { grid-column: 2; grid-row: 1 / span 3; align-self: center; text-align: right; }
 .hero-card .price .price-bar { grid-column: 1 / -1; }
+.md-step span, .ltile b, .md-cell, .md-layer, .md-pt span, .price-name { hyphens: auto; overflow-wrap: anywhere; }
+.md-step { min-width: 0; flex-basis: 90px; }
