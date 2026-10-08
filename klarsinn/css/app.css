@@ -728,3 +728,18 @@ html.noscroll, html.noscroll body { overflow: hidden; }
 }
 [hidden] { display: none !important; }
 a.ltile { text-decoration: none; color: var(--ink); }
+
+/* ===== Konto ===== */
+#account { display: flex; }
+.acc-btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: .86rem; cursor: pointer; list-style: none; color: var(--ink); }
+.acc-btn::-webkit-details-marker { display: none; }
+.acc-btn img, .acc-ini { width: 26px; height: 26px; border-radius: 50%; }
+.acc-ini { display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font-weight: 800; }
+details.acc-menu { position: relative; }
+details.acc-menu > summary.acc-btn { padding: 0 6px; }
+.acc-pop { position: absolute; right: 0; top: calc(100% + 8px); width: 250px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px; display: grid; gap: 8px; z-index: 60; font-size: .88rem; }
+.acc-pop span.faint { overflow-wrap: anywhere; }
+.login-gate { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; background: var(--accent-tint); border-radius: 14px; padding: 14px 16px; }
+.login-gate.ok { background: var(--ok-tint); }
+.login-gate .btn svg, .acc-btn svg { flex: none; }
+@media (max-width: 560px) { .acc-btn span { display: none; } }

@@ -269,6 +269,7 @@
   function viewData() {
     const size = JSON.stringify(KS.data).length;
     return '<div class="sec-h" style="margin-top:6px"><div><div class="eyebrow">Datenschutz</div><h2 style="font-size:clamp(1.9rem,4vw,2.8rem)">Meine Daten</h2></div></div>' +
+      (KS.cloud && KS.cloud.enabled ? '<div class="panel stack" style="margin-bottom:16px"><h3>Konto</h3>' + (KS.cloud.user ? '<p class="muted" style="margin:0">Angemeldet als <b>' + esc(KS.cloud.user.email || "") + '</b>. Deine Daten werden automatisch in deinem Konto gespeichert (Google Firebase) und zwischen deinen Geräten synchronisiert.</p><div class="row"><button type="button" class="btn ghost" data-logout>Abmelden</button><button type="button" class="btn ghost" data-delcloud>Kontodaten löschen</button></div>' : '<p class="muted" style="margin:0">Melde dich an, um deinen Fortschritt geräteübergreifend zu speichern.</p><div><button type="button" class="btn" data-login>' + KS.googleIcon + ' Mit Google anmelden</button></div>') + "</div>" : "") +
       '<div class="grid2"><div class="panel stack"><h3>Wo deine Daten liegen</h3><p class="muted" style="margin:0">Alles, was du einträgst, bleibt ausschließlich im Speicher dieses Browsers auf diesem Gerät. Es gibt kein Konto, keinen Server und kein Tracking. Das heißt auch: Wenn du die Browserdaten löschst oder das Gerät wechselst, sind deine Einträge weg. Sichere sie deshalb ab und zu.</p><span class="chip num">' + (size / 1024).toFixed(1).replace(".", ",") + " KB gespeichert</span>" + (KS.storageOk ? "" : '<div class="note warn">Dein Browser erlaubt hier gerade kein dauerhaftes Speichern.</div>') + "</div>" +
       '<div class="panel stack"><h3>Sicherung</h3><div class="row"><button class="btn" type="button" data-exp>Sicherung kopieren</button>' + (window.KS_EMBED ? "" : '<button class="btn ghost" type="button" data-dl>Als Datei herunterladen</button>') + '</div><textarea id="dt-out" hidden aria-label="Sicherungsdaten"></textarea><hr class="soft"><h3>Wiederherstellen</h3><textarea id="dt-in" placeholder="Sicherung hier einfügen"></textarea><div class="row"><button class="btn ghost" type="button" data-imp>Einfügen und wiederherstellen</button><label class="btn ghost small" for="dt-file">Datei wählen</label><input type="file" id="dt-file" accept="application/json,.json" hidden></div></div></div>' +
       '<div class="panel stack" style="margin-top:16px;border-color:var(--crit)"><h3>Alles löschen</h3><p class="muted" style="margin:0">Löscht alle Einträge, Fortschritte und Einstellungen unwiderruflich aus diesem Browser.</p><div class="row"><button class="btn danger" type="button" data-reset>Alle Daten löschen</button><span data-resetinfo class="faint"></span></div></div>';
@@ -280,6 +281,7 @@
     const imp = (txt) => { try { const o = JSON.parse(txt); if (!o || o.app !== "klarsinn" || !o.data) throw 0; KS.replaceData(o.data); KS.toast("Daten wiederhergestellt"); location.hash = "#start"; render(); } catch (e) { KS.toast("Das ist keine gültige Klarsinn-Sicherung"); } };
     app.querySelector("[data-imp]").onclick = () => imp(app.querySelector("#dt-in").value);
     app.querySelector("#dt-file").onchange = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => imp(r.result); r.readAsText(f); };
+    const dc = app.querySelector("[data-delcloud]"); if (dc) dc.onclick = async () => { if (dc.dataset.c !== "1") { dc.dataset.c = "1"; dc.textContent = "Wirklich alle Kontodaten löschen?"; return; } await KS.cloud.deleteAccountData(); KS.toast("Kontodaten gelöscht"); KS.cloud.logout(); };
     const rs = app.querySelector("[data-reset]"); rs.onclick = () => { if (rs.dataset.c !== "1") { rs.dataset.c = "1"; rs.textContent = "Ja, endgültig löschen"; app.querySelector("[data-resetinfo]").textContent = "Zum Bestätigen erneut klicken."; return; } KS.replaceData({}); KS.toast("Alle Daten gelöscht"); location.hash = "#start"; render(); };
   }
 
@@ -338,6 +340,7 @@
     document.querySelectorAll(".nav a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.r === map[top]) || a.setAttribute("aria-current", "page"));
     document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.r === map[top]) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     document.getElementById("nav").classList.remove("open");
+    if (KS.renderAccount) KS.renderAccount();
     document.querySelectorAll('.nav [data-r="kaufen"]').forEach((a) => (a.hidden = KS.licensed()));
     const wt = h.match(/^woche-(\d+)$/); const wk = wt && W.find((x) => x.n === Number(wt[1]));
     document.title = wk ? "Woche " + wk.n + ": " + wk.title + " · Klarsinn" : "Klarsinn";

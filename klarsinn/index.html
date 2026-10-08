@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Klarsinn</title>
 <meta name="description" content="Klarsinn – ein wissenschaftlich fundiertes, interaktives Programm (12 Wochen, 6 oder 12 Monate) für mentale Gesundheit. Wöchentlicher Input, Übungen, Aufgaben und Werkzeuge auf Basis von KVT, ACT, Achtsamkeit und Positiver Psychologie.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Klarsinn – Programm für mentale Gesundheit">
+<meta property="og:description" content="60 interaktive Lektionen, Übungen, Prüfungen und Abschlusszertifikat. Evidenzbasiert, in 12 Wochen, 6 oder 12 Monaten.">
+<meta name="theme-color" content="#1D5C7A">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -27,6 +29,7 @@
       <a href="#kaufen" data-r="kaufen">Preise</a>
     </nav>
     <div class="stats" id="stats"></div>
+    <div id="account"></div>
     <a class="sos" href="#hilfe">Hilfe<span class="sos-long">&nbsp;in der Krise</span></a>
     <button class="iconbtn" id="themeBtn" type="button" aria-label="Farbschema wechseln" title="Hell/Dunkel">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -43,13 +46,14 @@
   <div class="wrap stack">
     <div class="row">
       <span><b>Klarsinn</b> · Ein Selbsthilfeprogramm auf Basis wissenschaftlicher Evidenz. Kein Ersatz für Diagnostik oder Psychotherapie.</span>
-      <span><a href="#hilfe">Hilfe &amp; Notfallnummern</a> · <a href="#daten">Meine Daten</a> · <a href="#quellen">Quellen</a></span>
+      <span><a href="#hilfe">Hilfe &amp; Notfallnummern</a> · <a href="#daten">Meine Daten</a> · <a href="#quellen">Quellen</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="agb.html">AGB &amp; Widerruf</a></span>
     </div>
-    <span>Alle Eingaben werden ausschließlich lokal in deinem Browser gespeichert. Es werden keine Daten übertragen.</span>
+    <span id="privacyNote">Ohne Anmeldung bleiben alle Eingaben ausschließlich in deinem Browser. Mit Google-Anmeldung werden sie verschlüsselt in deinem Konto gespeichert und zwischen deinen Geräten synchronisiert.</span>
   </div>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="js/config.js"></script>
 <script src="js/core.js"></script>
 <script src="js/refs.js"></script>
 <script src="js/weeks-01-04.js"></script>
@@ -72,6 +76,7 @@
 <script src="js/models.js"></script>
 <script src="js/academy.js"></script>
 <script src="js/lessons.js"></script>
+<script src="js/cloud.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

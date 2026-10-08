@@ -19,6 +19,12 @@ Ein wissenschaftlich fundiertes, interaktives Selbsthilfeprogramm als Web-App. R
 
 Die Variante wird beim Start gewählt und kann unter „Programm“ jederzeit gewechselt werden.
 
+## Online stellen
+
+Komplette Anleitung in **[SETUP.md](SETUP.md)**: GitHub Pages, eigene Domain (DNS-Einträge), Google-Login über Firebase, Zahlungen über Stripe mit automatischer Freischaltung, Rechtstexte.
+
+Zusätzliche Dateien dafür: `js/config.js` (Firebase-Zugangsdaten, Login-Pflicht), `js/cloud.js` (Google-Login und Synchronisierung), `firestore.rules` (Sicherheitsregeln, serverseitige Gutscheinprüfung), `functions/` (Stripe-Webhook), `impressum.html`, `datenschutz.html`, `agb.html` (Vorlagen), `CNAME.example`, `fonts/` (selbst gehostete Schriften, keine Google-Fonts-Verbindung).
+
 ## Preise und Freischaltung
 
 | Variante | Preis | ≈ pro Woche |
